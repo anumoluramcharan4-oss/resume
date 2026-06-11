@@ -617,91 +617,97 @@ const CareerAdvisor = () => {
         </motion.div>
 
         {/* 2. Path details and layout splits */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-10">
           
-          {/* LEFT: Career Recommendation Match Cards */}
-          <motion.div variants={itemVariants} className="space-y-4 lg:col-span-1">
+          {/* TOP: Career Recommendation Match Cards */}
+          <motion.div variants={itemVariants} className="space-y-4">
             <h3 className="text-xs font-bold text-main uppercase tracking-widest flex items-center gap-2 px-1">
               <Compass size={14} className="text-accent" /> AI Career Path Recommendations
             </h3>
             
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              
+              {/* Quick Milestones stats card */}
+              <GlassCard className="p-6 space-y-4 flex flex-col justify-between border-subtle">
+                <div>
+                  <h4 className="text-xs font-bold text-main uppercase tracking-wider border-b border-subtle/50 pb-2.5">
+                    Strategy Tracker
+                  </h4>
+                  <div className="space-y-4 pt-3.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted flex items-center gap-1.5"><Brain size={12} /> Roadmap Progress</span>
+                      <span className="font-extrabold text-main">{completedRoadmapSkills}/{totalRoadmapSkills} skills</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted flex items-center gap-1.5"><Briefcase size={12} /> Completed Projects</span>
+                      <span className="font-extrabold text-main">{completedProjects}/{totalProjects} projects</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted flex items-center gap-1.5"><Award size={12} /> Credentials Earned</span>
+                      <span className="font-extrabold text-main">{completedCerts}/{totalCerts} certs</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-muted italic pt-3 border-t border-subtle/50">
+                  Track your milestones to boost your career scores.
+                </div>
+              </GlassCard>
+
               {profile.recommendations?.map((path, idx) => {
                 const isSelected = selectedPath?.careerPath === path.careerPath;
                 return (
                   <div
                     key={idx}
                     onClick={() => setSelectedPath(path)}
-                    className={`glass border p-5 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group
-                      ${isSelected ? "border-focus bg-card/60 shadow-lg" : "border-subtle hover:border-focus/50 hover:bg-card/20"}`}
+                    className={`glass border p-6 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between
+                      ${isSelected ? "border-accent bg-accent/[0.03] shadow-lg shadow-accent/[0.02]" : "border-subtle hover:border-accent/40 hover:bg-surface-hover/20"}`}
                   >
                     {/* Glow tag for high matches */}
                     {path.matchPercentage >= 80 && (
-                      <div className="absolute top-0 right-0 bg-accent/20 border-l border-b border-accent/30 text-accent font-extrabold text-[8px] tracking-widest px-2.5 py-0.5 rounded-bl-lg uppercase leading-none">
+                      <div className="absolute top-0 right-0 bg-accent/20 border-l border-b border-accent/20 text-accent font-extrabold text-[8px] tracking-widest px-2.5 py-1 rounded-bl-lg uppercase leading-none">
                         Best Fit
                       </div>
                     )}
 
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-black text-main tracking-tight leading-tight group-hover:text-accent transition-colors">
+                    <div className="space-y-3.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-xs font-black text-main tracking-tight leading-snug group-hover:text-accent transition-colors max-w-[80%]">
                           {path.careerPath}
                         </h4>
-                        <span className="text-xs font-black text-accent">{path.matchPercentage}%</span>
+                        <span className="text-xs font-black text-accent shrink-0">{path.matchPercentage}%</span>
                       </div>
                       
-                      <p className="text-[10px] text-muted leading-relaxed line-clamp-2">
+                      <p className="text-[10.5px] text-muted leading-relaxed line-clamp-2">
                         {path.whyItMatches}
                       </p>
+                    </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-[9px] border-t border-subtle/50 pt-2.5">
-                        <div>
-                          <p className="text-muted font-bold uppercase tracking-wider">Timeline</p>
-                          <p className="text-main font-semibold mt-0.5">{path.learningTimeline}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted font-bold uppercase tracking-wider">Salary Goal</p>
-                          <p className="text-main font-semibold mt-0.5">{path.salaryRange}</p>
-                        </div>
-                        <div className="mt-1">
-                          <p className="text-muted font-bold uppercase tracking-wider">Growth</p>
-                          <p className="text-main font-semibold mt-0.5">{path.expectedGrowth}</p>
-                        </div>
-                        <div className="mt-1">
-                          <p className="text-muted font-bold uppercase tracking-wider">Difficulty</p>
-                          <p className="text-main font-semibold mt-0.5">{path.difficultyLevel}</p>
-                        </div>
+                    <div className="grid grid-cols-2 gap-3 text-[10px] border-t border-subtle/50 pt-3.5 mt-4">
+                      <div>
+                        <p className="text-muted font-bold uppercase tracking-wider text-[8px]">Timeline</p>
+                        <p className="text-main font-semibold mt-0.5 leading-snug">{path.learningTimeline}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted font-bold uppercase tracking-wider text-[8px]">Salary Goal</p>
+                        <p className="text-main font-semibold mt-0.5 leading-snug">{path.salaryRange}</p>
+                      </div>
+                      <div className="mt-1">
+                        <p className="text-muted font-bold uppercase tracking-wider text-[8px]">Growth</p>
+                        <p className="text-main font-semibold mt-0.5 leading-snug">{path.expectedGrowth}</p>
+                      </div>
+                      <div className="mt-1">
+                        <p className="text-muted font-bold uppercase tracking-wider text-[8px]">Difficulty</p>
+                        <p className="text-main font-semibold mt-0.5 leading-snug">{path.difficultyLevel}</p>
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-
-            {/* Quick Milestones stats card */}
-            <GlassCard className="p-5 space-y-4">
-              <h4 className="text-xs font-bold text-main uppercase tracking-wider border-b border-subtle/50 pb-2.5">
-                Strategy Tracker
-              </h4>
-              <div className="space-y-3.5">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted flex items-center gap-1.5"><Brain size={12} /> Roadmap Progress</span>
-                  <span className="font-extrabold text-main">{completedRoadmapSkills}/{totalRoadmapSkills} skills</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted flex items-center gap-1.5"><Briefcase size={12} /> Completed Projects</span>
-                  <span className="font-extrabold text-main">{completedProjects}/{totalProjects} projects</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted flex items-center gap-1.5"><Award size={12} /> Credentials Earned</span>
-                  <span className="font-extrabold text-main">{completedCerts}/{totalCerts} certs</span>
-                </div>
-              </div>
-            </GlassCard>
           </motion.div>
 
-          {/* RIGHT: Selected Path's tabs (Roadmap, Gaps, Projects, Certifications, Salary insights) */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
+          {/* BOTTOM: Selected Path's tabs (Roadmap, Gaps, Projects, Certifications, Salary insights) */}
+          <motion.div variants={itemVariants} className="space-y-6">
             
             {/* Tabs selector */}
             <div className="flex items-center gap-1 border-b border-subtle pb-px">
