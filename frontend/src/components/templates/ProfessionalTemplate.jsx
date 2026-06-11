@@ -8,12 +8,12 @@ const ProfessionalTemplate = ({ resume }) => {
   const { personal, about, skills, education, experience, projects, certifications, achievements, languages } = resume;
 
   return (
-    <div className="w-full min-h-[1123px] bg-[#0c0c0c] font-sans text-main text-[13.5px] flex leading-relaxed relative overflow-hidden bg-grid-metallic">
+    <div className="w-full min-h-[1123px] bg-base font-sans text-main text-[13.5px] flex leading-relaxed relative overflow-hidden bg-grid-metallic">
       {/* Decorative vertical separator line on side-grid */}
       <div className="absolute top-0 bottom-0 left-[32%] w-[1px] bg-[var(--color-border-subtle)]" />
 
       {/* Left Sidebar (32% width) */}
-      <div className="w-[32%] bg-[#101010] text-main px-8 py-10 space-y-8 flex-shrink-0 z-10">
+      <div className="w-[32%] bg-[#101010] [.light_&]:bg-[#f4f1ea] text-main px-8 py-10 space-y-8 flex-shrink-0 z-10">
         {/* Name Block */}
         <div className="pb-6 border-b border-[var(--color-border-subtle)]">
           <h1 className="font-display text-2xl font-bold text-main leading-tight tracking-wide uppercase">
@@ -110,7 +110,9 @@ const ProfessionalTemplate = ({ resume }) => {
             <div className="space-y-2">
               {languages.map((lang, i) => (
                 <div key={i} className="flex items-center justify-between text-xs">
-                  <span className="text-muted font-medium uppercase tracking-wider">{lang}</span>
+                  <span className="text-muted font-medium uppercase tracking-wider">
+                    {typeof lang === "string" ? lang : `${lang.name}${lang.proficiency ? ` (${lang.proficiency})` : ""}`}
+                  </span>
                   <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
                 </div>
               ))}
@@ -143,7 +145,7 @@ const ProfessionalTemplate = ({ resume }) => {
               {experience.map((exp, i) => (
                 <div key={i} className="relative pl-6 border-l border-accent/15 py-1 first:pt-0 last:pb-0">
                   {/* Timeline Node Icon */}
-                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-[#0c0c0c] z-10" />
+                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-base z-10" />
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
                     <h3 className="font-bold text-main text-[15px] tracking-wide">
@@ -174,7 +176,7 @@ const ProfessionalTemplate = ({ resume }) => {
             <div className="space-y-6 relative pl-1">
               {education.map((edu, i) => (
                 <div key={i} className="relative pl-6 border-l border-accent/15 py-1 first:pt-0 last:pb-0">
-                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-[#0c0c0c] z-10" />
+                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-base z-10" />
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
                     <h3 className="font-bold text-main text-[14.5px]">
@@ -208,7 +210,7 @@ const ProfessionalTemplate = ({ resume }) => {
             <div className="space-y-6 relative pl-1">
               {projects.map((proj, i) => (
                 <div key={i} className="relative pl-6 border-l border-accent/15 py-1 first:pt-0 last:pb-0">
-                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-[#0c0c0c] z-10" />
+                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-accent bg-base z-10" />
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1.5">
                     <h3 className="font-bold text-main text-[14.5px] flex items-center gap-2">
@@ -245,7 +247,7 @@ const ProfessionalTemplate = ({ resume }) => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {certifications.map((cert, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-[#121212]/50 border border-[var(--color-border-subtle)]">
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-surface/50 border border-[var(--color-border-subtle)]">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
                   <div>
                     <h4 className="text-[13.5px] font-semibold text-main leading-tight">{cert.name}</h4>
@@ -267,7 +269,14 @@ const ProfessionalTemplate = ({ resume }) => {
               {achievements.map((ach, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-muted leading-relaxed font-light">
                   <span className="text-accent text-[10px] mt-1.5">✦</span>
-                  <span>{ach}</span>
+                  <span>
+                    {typeof ach === "string" ? ach : (
+                      <>
+                        <strong className="text-main font-semibold">{ach.title}</strong>
+                        {ach.description && ` — ${ach.description}`}
+                      </>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>

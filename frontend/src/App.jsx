@@ -22,6 +22,7 @@ import AISuggestions from "./pages/AISuggestions";
 import JobsPage from "./pages/JobsPage";
 import JobMatchPage from "./pages/JobMatchPage";
 import ProfilePage from "./pages/ProfilePage";
+import CareerAdvisor from "./pages/CareerAdvisor";
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
               <Route path="/jobs" element={<JobsPage />} />
               <Route path="/jobs/match" element={<JobMatchPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/advisor" element={<CareerAdvisor />} />
             </Route>
 
             {/* ---- Catch-all: redirect to home ---- */}

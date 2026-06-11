@@ -33,7 +33,7 @@ const ModernTemplate = ({ resume }) => {
   );
 
   return (
-    <div className="w-full min-h-[1123px] bg-[#0c0c0c] font-sans text-main text-[13.5px] leading-relaxed relative overflow-hidden bg-grid-metallic">
+    <div className="w-full min-h-[1123px] bg-base font-sans text-main text-[13.5px] leading-relaxed relative overflow-hidden bg-grid-metallic">
       {/* Decorative vertical metallic bar on left edge */}
       <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-gradient-to-b from-accent/50 via-accent/10 to-transparent" />
 
@@ -78,7 +78,7 @@ const ModernTemplate = ({ resume }) => {
               {experience.map((exp, i) => (
                 <div key={i} className="relative pl-5 border-l border-accent/15 py-1 first:pt-0 last:pb-0">
                   {/* Timeline bullet dot */}
-                  <div className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full border-2 border-accent bg-[#0c0c0c] z-10" />
+                  <div className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full border-2 border-accent bg-base z-10" />
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
                     <h4 className="font-bold text-main text-[14.5px] tracking-wide">{exp.role}</h4>
@@ -100,7 +100,7 @@ const ModernTemplate = ({ resume }) => {
             <MainSection title="Key Projects">
               {projects.map((proj, i) => (
                 <div key={i} className="relative pl-5 border-l border-accent/15 py-1 first:pt-0 last:pb-0">
-                  <div className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full border-2 border-accent bg-[#0c0c0c] z-10" />
+                  <div className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full border-2 border-accent bg-base z-10" />
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1.5">
                     <h4 className="font-bold text-main text-[14.5px] flex items-center gap-2">
@@ -174,7 +174,12 @@ const ModernTemplate = ({ resume }) => {
               <div className="space-y-2">
                 {achievements.map((ach, i) => (
                   <p key={i} className="text-xs text-muted leading-relaxed font-light">
-                    ✦ {ach}
+                    ✦ {typeof ach === "string" ? ach : (
+                      <>
+                        <strong className="text-main font-semibold">{ach.title}</strong>
+                        {ach.description && ` — ${ach.description}`}
+                      </>
+                    )}
                   </p>
                 ))}
               </div>
@@ -188,7 +193,7 @@ const ModernTemplate = ({ resume }) => {
                 {languages.map((lang, i) => (
                   <span key={i} className="text-xs text-muted font-medium uppercase tracking-wider flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
-                    {lang}
+                    {typeof lang === "string" ? lang : `${lang.name}${lang.proficiency ? ` (${lang.proficiency})` : ""}`}
                   </span>
                 ))}
               </div>

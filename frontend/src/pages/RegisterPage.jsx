@@ -37,7 +37,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base flex flex-col justify-center px-4 sm:px-6 lg:px-8 transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-base flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 transition-colors duration-300 relative overflow-hidden">
 
       {/* Background Metallic Grid */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -47,12 +47,12 @@ const RegisterPage = () => {
         <div className="glow-orb glow-orb--3" style={{ animationDelay: '12s' }}></div>
       </div>
 
-      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-[420px]">
+      <div className="relative z-10 mx-auto w-full max-w-[480px]">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex justify-center mb-12"
+          className="flex justify-center mb-10"
         >
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[var(--color-text-accent)] to-[var(--color-text-accent-muted)] flex items-center justify-center shadow-lg shadow-[var(--color-text-accent)]/20 group-hover:shadow-[var(--color-text-accent)]/40 transition-shadow">
@@ -68,11 +68,11 @@ const RegisterPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass border border-[rgba(212,175,55,0.1)] rounded-[2rem] shadow-2xl sm:px-10 px-6 py-10"
+          className="glass border border-[rgba(212,175,55,0.1)] rounded-[2.25rem] shadow-2xl sm:p-12 p-8"
         >
-          <div className="text-center mb-10">
-            <h2 className="text-headline text-main tracking-tight mb-3">Create your account</h2>
-            <p className="text-body text-muted font-medium">Start building your career with AI today</p>
+          <div className="text-center mb-8">
+            <h2 className="text-headline text-main tracking-tight mb-2">Create your account</h2>
+            <p className="text-body-sm text-muted font-medium">Start building your career with AI today</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -154,7 +154,7 @@ const RegisterPage = () => {
             </div>
 
             {/* Submit */}
-            <div className="pt-2">
+            <div className="pt-4">
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}

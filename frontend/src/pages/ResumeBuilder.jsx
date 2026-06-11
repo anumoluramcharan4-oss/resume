@@ -4,7 +4,7 @@
 // Multi-step resume builder with live preview
 
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Save, Eye, Sparkles, ChevronLeft, ChevronRight, X } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
@@ -56,6 +56,7 @@ const ResumeBuilder = () => {
   const [skillInput, setSkillInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
   // If editing existing resume, load it
@@ -71,8 +72,15 @@ const ResumeBuilder = () => {
         }
       };
       load();
+    } else if (location.state?.presetResume) {
+      setResume({
+        ...defaultResume,
+        ...location.state.presetResume,
+        title: `My ${location.state.presetName || "Resume"}`
+      });
+      toast.success("Loaded template structure! 📝");
     }
-  }, [id]);
+  }, [id, location.state]);
 
   const update = (field, value) => setResume((r) => ({ ...r, [field]: value }));
   const updatePersonal = (field, value) =>

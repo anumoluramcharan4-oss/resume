@@ -24,7 +24,7 @@ const MinimalTemplate = ({ resume }) => {
   );
 
   return (
-    <div className="w-full min-h-[1123px] bg-[#0c0c0c] font-sans text-main text-[13.5px] px-16 py-14 leading-relaxed relative overflow-hidden bg-grid-metallic selection:bg-accent/20">
+    <div className="w-full min-h-[1123px] bg-base font-sans text-main text-[13.5px] px-16 py-14 leading-relaxed relative overflow-hidden bg-grid-metallic selection:bg-accent/20">
       {/* Editorial Top Border Accent */}
       <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-accent/40 via-accent to-accent/40" />
 
@@ -205,7 +205,14 @@ const MinimalTemplate = ({ resume }) => {
             {achievements.map((ach, i) => (
               <li key={i} className="flex items-start gap-3 text-muted leading-relaxed font-light">
                 <span className="text-accent text-xs mt-1">✦</span>
-                <span>{ach}</span>
+                <span>
+                  {typeof ach === "string" ? ach : (
+                    <>
+                      <strong className="text-main font-semibold">{ach.title}</strong>
+                      {ach.description && ` — ${ach.description}`}
+                    </>
+                  )}
+                </span>
               </li>
             ))}
           </ul>
@@ -219,7 +226,9 @@ const MinimalTemplate = ({ resume }) => {
             {languages.map((lang, i) => (
               <div key={i} className="flex items-center gap-2 text-muted font-medium text-xs tracking-wider uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent/60" />
-                <span>{lang}</span>
+                <span>
+                  {typeof lang === "string" ? lang : `${lang.name}${lang.proficiency ? ` (${lang.proficiency})` : ""}`}
+                </span>
               </div>
             ))}
           </div>

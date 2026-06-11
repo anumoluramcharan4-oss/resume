@@ -5,8 +5,9 @@
 // Analyzes how well a selected resume matches a job description
 
 import { useState, useEffect } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Briefcase, Sparkles, CheckCircle, XCircle, AlertCircle, RefreshCw, ChevronRight, Zap } from "lucide-react";
+import { FileText, Briefcase, Sparkles, CheckCircle, XCircle, AlertCircle, RefreshCw, ChevronRight, Zap, Target } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
@@ -27,7 +28,7 @@ const CircularProgress = ({ value, label }) => {
       <div className="relative w-40 h-40 flex items-center justify-center">
         <svg className="transform -rotate-90 w-40 h-40">
           <circle
-            className="text-white/10"
+            className="text-muted/15 dark:text-white/10"
             strokeWidth="12"
             stroke="currentColor"
             fill="transparent"
@@ -72,13 +73,21 @@ const JobMatchPage = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedData, setOptimizedData] = useState(null);
 
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+
   // Fetch user resumes on mount
   useEffect(() => {
     const fetchResumes = async () => {
       try {
         const res = await api.get("/resumes");
         setResumes(res.data.resumes);
-        if (res.data.resumes.length > 0) {
+        
+        // Check if resumeId is passed in search query or router state
+        const paramId = searchParams.get("resumeId") || location.state?.resumeId;
+        if (paramId && res.data.resumes.some((r) => r._id === paramId)) {
+          setSelectedResumeId(paramId);
+        } else if (res.data.resumes.length > 0) {
           setSelectedResumeId(res.data.resumes[0]._id);
         }
       } catch (err) {
@@ -86,7 +95,7 @@ const JobMatchPage = () => {
       }
     };
     fetchResumes();
-  }, []);
+  }, [searchParams, location.state]);
 
   const handleAnalyze = async () => {
     if (!selectedResumeId) return toast.error("Please select a resume");
@@ -168,16 +177,18 @@ const JobMatchPage = () => {
                 </select>
 
                 {selectedResume && (
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                    <h3 className="font-medium text-main">{selectedResume.personalInfo?.fullName || "No Name"}</h3>
+                  <div className="p-4 rounded-xl bg-surface-hover border border-subtle space-y-3">
+                    <h3 className="font-semibold text-main">
+                      {selectedResume.personal?.fullName || selectedResume.personalInfo?.fullName || "No Name"}
+                    </h3>
                     <p className="text-xs text-muted line-clamp-2">{selectedResume.summary || "No summary provided."}</p>
                     
                     <div>
                       <span className="text-xs font-semibold text-muted mb-1 block">Top Skills</span>
                       <div className="flex flex-wrap gap-1">
                         {selectedResume.skills?.slice(0, 5).map((skill, i) => (
-                          <span key={i} className="px-2 py-0.5 rounded-md text-[10px] bg-[var(--color-brand-500)]/20 text-[var(--color-brand-300)]">
-                            {skill}
+                          <span key={i} className="px-2 py-0.5 rounded-md text-[10px] bg-accent/10 text-accent border border-accent/20 font-medium">
+                            {typeof skill === "string" ? skill : skill.name}
                           </span>
                         ))}
                         {selectedResume.skills?.length > 5 && (
@@ -294,13 +305,13 @@ const JobMatchPage = () => {
                   >
                     <div className="absolute top-0 left-0 w-1 h-full bg-purple-500" />
                     <h3 className="text-xl font-bold text-main mb-6 flex items-center gap-2">
-                      <Sparkles className="text-purple-400" /> Optimized Content Generated!
+                      <Sparkles className="text-purple-500 dark:text-purple-400" /> Optimized Content Generated!
                     </h3>
                     
                     <div className="space-y-6">
                       <div>
                         <h4 className="text-sm font-semibold text-muted mb-2 uppercase tracking-wider">New Summary</h4>
-                        <div className="p-4 rounded-xl bg-black/40 border border-white/10 text-sm">
+                        <div className="p-4 rounded-xl bg-surface-hover border border-subtle text-sm">
                           {optimizedData.optimizedSummary}
                         </div>
                       </div>
@@ -310,8 +321,8 @@ const JobMatchPage = () => {
                           <h4 className="text-sm font-semibold text-muted mb-2 uppercase tracking-wider">Optimized Projects</h4>
                           <div className="space-y-3">
                             {optimizedData.optimizedProjects.map((p, i) => (
-                              <div key={i} className="p-4 rounded-xl bg-black/40 border border-white/10 text-sm">
-                                <span className="font-semibold text-purple-400 block mb-1">{p.originalTitle}</span>
+                              <div key={i} className="p-4 rounded-xl bg-surface-hover border border-subtle text-sm">
+                                <span className="font-semibold text-purple-600 dark:text-purple-400 block mb-1">{p.originalTitle}</span>
                                 {p.optimizedDescription}
                               </div>
                             ))}
@@ -324,7 +335,7 @@ const JobMatchPage = () => {
                           <h4 className="text-sm font-semibold text-muted mb-2 uppercase tracking-wider">Keywords Added</h4>
                           <div className="flex flex-wrap gap-2">
                             {optimizedData.addedKeywords.map((kw, i) => (
-                              <span key={i} className="px-3 py-1 rounded-full text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                              <span key={i} className="px-3 py-1 rounded-full text-xs bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-medium">
                                 {kw}
                               </span>
                             ))}
@@ -410,7 +421,7 @@ const JobMatchPage = () => {
                     <h3 className="text-lg font-bold text-main mb-6">Suggested Projects to Build</h3>
                     <div className="grid grid-cols-1 gap-4">
                       {results.suggestedProjects.map((proj, i) => (
-                        <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
+                        <div key={i} className="p-4 rounded-xl bg-surface-hover border border-subtle hover:border-focus transition-colors">
                           <h4 className="font-semibold text-main mb-1">{proj.title}</h4>
                           <p className="text-sm text-muted">{proj.description}</p>
                         </div>
@@ -427,8 +438,5 @@ const JobMatchPage = () => {
     </DashboardLayout>
   );
 };
-
-// Extracted lucide icon not in import list
-import { Target } from "lucide-react";
 
 export default JobMatchPage;
