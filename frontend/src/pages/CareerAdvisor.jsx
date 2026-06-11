@@ -277,7 +277,7 @@ const CareerAdvisor = () => {
   if (!profile) {
     return (
       <DashboardLayout title="Setup Career Advisor">
-        <div className="max-w-4xl mx-auto space-y-8 py-6">
+        <div className="max-w-5xl mx-auto space-y-8 py-6">
           {initializing ? (
             <div className="glass border border-subtle rounded-3xl p-12 text-center bg-card/40 min-h-[450px] flex flex-col items-center justify-center gap-6">
               <div className="relative">
@@ -321,8 +321,8 @@ const CareerAdvisor = () => {
               </div>
 
               {/* Wizard Form */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
                   <GlassCard className="p-6 space-y-6">
                     <h3 className="text-sm font-bold text-main uppercase tracking-widest flex items-center gap-2">
                       <Target size={16} className="text-accent" /> Define Your Target Goal
@@ -759,7 +759,7 @@ const CareerAdvisor = () => {
                       </div>
 
                       {/* Skills inside this phase */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                         {phase.skills?.map((skill, sIdx) => {
                           const isToggling = togglingAction === skill.name;
                           return (
@@ -914,7 +914,7 @@ const CareerAdvisor = () => {
 
               {/* 3. SUGGESTED PROJECTS */}
               {activeTab === "projects" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {profile.projects?.map((proj) => {
                     const isToggling = togglingAction === proj._id;
                     return (
@@ -993,7 +993,7 @@ const CareerAdvisor = () => {
 
               {/* 4. RECOMMENDED CERTIFICATIONS */}
               {activeTab === "certifications" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {profile.certifications?.map((cert) => {
                     const isToggling = togglingAction === cert._id;
                     return (

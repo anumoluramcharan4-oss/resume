@@ -42,7 +42,7 @@ const DashboardLayout = ({ children, title }) => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="flex-1 overflow-y-auto p-5 md:p-8 custom-scrollbar"
           >
-            <div className="max-w-6xl mx-auto w-full flex flex-col gap-8 pb-8">
+            <div className="max-w-7xl xl:max-w-[1440px] mx-auto w-full flex flex-col gap-8 pb-8">
               {children}
             </div>
           </motion.main>
