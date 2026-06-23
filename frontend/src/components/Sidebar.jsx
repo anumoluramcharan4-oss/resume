@@ -28,7 +28,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Career Advisor", icon: Compass, path: "/advisor" },
   { label: "Resume Builder", icon: FileText, path: "/resume/new" },
-  { label: "Gallery", icon: Images, path: "/gallery" },
+  { label: "Resume Hub", icon: FileText, path: "/resume-hub" },
   { label: "AI Suggestions", icon: Sparkles, path: "/ai" },
   { label: "Job Match Analyzer", icon: Target, path: "/jobs/match" },
   { label: "Jobs & Internships", icon: Briefcase, path: "/jobs" },
@@ -69,8 +69,8 @@ const Sidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         {/* Header (Logo + Brand Name) */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-subtle h-16 shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-[#e0b02b] flex items-center justify-center flex-shrink-0 shadow-md shadow-accent/10">
-              <Zap size={18} className="text-black font-black" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/20">
+              <Zap size={18} className="text-white fill-white" />
             </div>
             <AnimatePresence>
               {!collapsed && (
@@ -159,52 +159,7 @@ const Sidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           ))}
         </nav>
 
-        {/* User Card & Logout (Bottom) */}
-        <div className="p-3 border-t border-subtle space-y-2 bg-surface/30">
-          {/* User profile card */}
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-hover/50 transition-colors duration-200 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-[#e0b02b] flex items-center justify-center flex-shrink-0 text-black text-xs font-black shadow-sm">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="overflow-hidden flex-1"
-                >
-                  <p className="text-xs font-semibold text-main truncate leading-normal">
-                    {user?.name || "Charan"}
-                  </p>
-                  <p className="text-[10px] text-muted truncate leading-normal">
-                    {user?.email || "charan@career.ai"}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:text-red-500 hover:bg-red-500/10 transition-all duration-200 group cursor-pointer"
-          >
-            <LogOut size={16} className="flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-xs font-semibold"
-                >
-                  Logout
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
-        </div>
       </aside>
     </>
   );

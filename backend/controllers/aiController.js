@@ -5,13 +5,10 @@
 // Each endpoint sends a carefully crafted prompt to Gemini
 // and returns structured results.
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const aiClient = require("../config/aiClient");
 
-// Initialize Gemini with API key from environment
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Helper: Get the Gemini model instance
-const getModel = () => genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// Helper: Get the OpenRouter model client
+const getModel = () => aiClient;
 
 // Helper: Safe JSON parse from Gemini response
 const parseJSON = (text) => {
@@ -267,7 +264,7 @@ const analyzeWeakness = async (req, res) => {
     const model = getModel();
     const prompt = `You are a senior career counselor. Analyze this resume for weaknesses and provide detailed, actionable improvement suggestions.
 
-Resume Data:
+${resume.rawText ? `Raw Resume Text:\n${resume.rawText}\n\n` : ""}Structured Resume Data:
 ${JSON.stringify(resume, null, 2)}
 
 Respond with JSON in this exact format:
@@ -341,7 +338,7 @@ const matchJob = async (req, res) => {
     const model = getModel();
     const prompt = `You are an expert technical recruiter and ATS system. Analyze the following resume against the provided job description and calculate a match score.
 
-Resume Data:
+${resume.rawText ? `Raw Resume Text:\n${resume.rawText}\n\n` : ""}Structured Resume Data:
 ${JSON.stringify(resume, null, 2)}
 
 Job Description:
@@ -396,7 +393,7 @@ const optimizeResumeForJob = async (req, res) => {
     const prompt = `You are an expert resume writer. The user wants to apply for a specific job. 
 Rewrite the user's Professional Summary and their most recent Project descriptions to better align with the Job Description. Use keywords from the job description naturally.
 
-Resume Data:
+${resume.rawText ? `Raw Resume Text:\n${resume.rawText}\n\n` : ""}Structured Resume Data:
 ${JSON.stringify(resume, null, 2)}
 
 Job Description:

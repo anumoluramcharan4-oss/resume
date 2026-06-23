@@ -9,7 +9,8 @@ import { motion } from "framer-motion";
 import {
   FileText, Plus, Sparkles, Briefcase, TrendingUp,
   ChevronRight, Clock, Star, Target, Brain, ArrowUpRight,
-  TrendingDown, ArrowDownRight, Compass, ShieldAlert, Award, Calendar, CheckCircle, HelpCircle
+  TrendingDown, ArrowDownRight, Compass, ShieldAlert, Award, Calendar, CheckCircle, HelpCircle,
+  Upload
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -137,6 +138,53 @@ const Dashboard = () => {
               >
                 <Compass size={14} /> Browse Gallery
               </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Import Existing Resume Card */}
+        <motion.div
+          variants={itemVariants}
+          className="relative rounded-[1.75rem] border border-dashed border-accent/30 bg-accent/[0.02] p-8 hover:bg-accent/[0.04] hover:border-accent/50 transition-all duration-300 group cursor-pointer"
+          onClick={() => navigate("/resume/import")}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0 && files[0].type === "application/pdf") {
+              navigate("/resume/import", { state: { droppedFile: files[0] } });
+            } else if (files && files.length > 0) {
+              alert("Only PDF files are supported");
+            }
+          }}
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-5 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform duration-300 shrink-0">
+                <Upload size={22} className="stroke-[2.5px]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-main uppercase tracking-widest flex items-center gap-2 font-display">
+                  Import Existing Resume <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25 lowercase tracking-normal font-bold">New</span>
+                </h3>
+                <p className="text-xs text-muted mt-1 leading-relaxed max-w-xl">
+                  Drag & drop your existing resume PDF here, or click to upload. Career AI will extract personal information, skills, projects, and work experience to automatically create your profile and career roadmap.
+                </p>
+              </div>
+            </div>
+            
+            {/* Visual drag indicator */}
+            <div className="border border-subtle bg-surface/50 rounded-xl px-5 py-3 text-xs font-semibold text-muted group-hover:text-accent group-hover:border-accent/40 transition-all flex items-center gap-2.5 shrink-0">
+              <Upload size={14} className="text-accent animate-bounce" />
+              <span>Drop PDF here to import</span>
             </div>
           </div>
         </motion.div>

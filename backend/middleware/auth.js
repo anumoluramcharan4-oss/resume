@@ -9,34 +9,25 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const protect = async (req, res, next) => {
-  let token;
-
-  // Check if the Authorization header has a Bearer token
-  // Format: "Authorization: Bearer <token>"
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      // Extract just the token part (after "Bearer ")
-      token = req.headers.authorization.split(" ")[1];
-
-      // Verify the token is valid and not expired
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Attach the user info to the request object (without password)
-      req.user = await User.findById(decoded.id).select("-password");
-
-      // Move to the next middleware / route handler
-      next();
-    } catch (error) {
-      console.error("Token verification failed:", error.message);
-      res.status(401).json({ message: "Not authorized, token failed" });
+  try {
+    // Find or create a default demo user
+    let user = await User.findOne({ email: "demo@careerai.com" });
+    if (!user) {
+      user = await User.create({
+        name: "Demo User",
+        email: "demo@careerai.com",
+        password: "demouser123",
+        headline: "Software Engineer & Career Optimizer",
+        location: "San Francisco, CA",
+        targetRole: "Frontend Developer",
+        experienceLevel: "mid"
+      });
     }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token provided" });
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error("Auth bypass failed:", error.message);
+    res.status(500).json({ message: "Server error setting up demo user" });
   }
 };
 

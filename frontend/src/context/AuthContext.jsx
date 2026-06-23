@@ -13,46 +13,44 @@ const AuthContext = createContext();
 
 // AuthProvider wraps the entire app and provides auth state
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-  const [loading, setLoading] = useState(true);
+  const defaultUser = {
+    _id: "650000000000000000000001",
+    name: "Demo User",
+    email: "demo@careerai.com",
+    headline: "Software Engineer & Career Optimizer",
+    location: "San Francisco, CA",
+    targetRole: "Frontend Developer",
+    experienceLevel: "mid"
+  };
 
-  // On app load, check if user is already logged in (token exists)
+  const [user, setUser] = useState(defaultUser);
+  const [token, setToken] = useState("mock-token");
+  const [loading, setLoading] = useState(false);
+
+  // Sync profile data from backend db
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = localStorage.getItem("token");
-      if (savedToken) {
-        try {
-          api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
-          const res = await api.get("/auth/me");
+      try {
+        api.defaults.headers.common["Authorization"] = `Bearer mock-token`;
+        const res = await api.get("/auth/me");
+        if (res.data?.user) {
           setUser(res.data.user);
-          setToken(savedToken);
-        } catch (err) {
-          // Token is invalid or expired — clear it
-          localStorage.removeItem("token");
-          setToken(null);
-          setUser(null);
         }
+      } catch (err) {
+        console.warn("Could not sync with backend user, using default profile:", err.message);
       }
-      setLoading(false);
     };
     initAuth();
   }, []);
 
-  // Login function — stores token, sets user
+  // Login function — no-op or local state update
   const login = (userData, authToken) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem("token", authToken);
-    api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+    if (userData) setUser(userData);
   };
 
-  // Logout function — clears everything
+  // Logout function — no-op
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    delete api.defaults.headers.common["Authorization"];
+    console.log("Logout clicked: Auth is disabled, remaining logged in as Demo User.");
   };
 
   // Update user after profile edit

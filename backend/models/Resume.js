@@ -22,7 +22,7 @@ const resumeSchema = new mongoose.Schema(
     // Which template to use for rendering
     template: {
       type: String,
-      enum: ["modern", "minimal", "professional"],
+      enum: ["modern", "minimal", "professional", "ats-friendly"],
       default: "modern",
     },
 
@@ -132,10 +132,59 @@ const resumeSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Last AI analysis summary
+    // Last AI analysis summary (structured object)
     aiAnalysis: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+
+    // Archiving status
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Resume completeness
+    completionPercentage: {
+      type: Number,
+      default: 0,
+    },
+
+    // Overall Analytics
+    viewsCount: {
+      type: Number,
+      default: 0,
+    },
+
+    downloadsCount: {
+      type: Number,
+      default: 0,
+    },
+
+    // --- PDF Storage & Extra AI Results ---
+    originalPdfData: {
       type: String,
-      default: "",
+      default: null,
+    },
+    originalPdfName: {
+      type: String,
+      default: null,
+    },
+    careerReadinessScore: {
+      type: Number,
+      default: null,
+    },
+    recommendedInternships: {
+      type: [String],
+      default: [],
+    },
+    recommendedCareerPaths: {
+      type: [String],
+      default: [],
+    },
+    rawText: {
+      type: String,
+      default: null,
     },
   },
   {

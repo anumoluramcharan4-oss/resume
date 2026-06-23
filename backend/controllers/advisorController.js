@@ -4,14 +4,13 @@
 // Handles Career recommendations, Skill analysis, Roadmap generation,
 // Progress tracking, and AI Coach chats using Gemini API.
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const aiClient = require("../config/aiClient");
 const CareerAdvisor = require("../models/CareerAdvisor");
 const Resume = require("../models/Resume");
 const User = require("../models/User");
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const getModel = () => genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// Helper: Get the OpenRouter model client
+const getModel = () => aiClient;
 
 // Safe JSON Parsing from Gemini response
 const parseJSON = (text) => {
@@ -146,7 +145,7 @@ Preferred Work Type: ${workType || "Remote"}
 Experience Details: ${JSON.stringify(experienceSummary)}
 Existing Projects: ${JSON.stringify(projectsSummary)}
 Existing Certifications: ${JSON.stringify(certificationsSummary)}
-
+${latestResume && latestResume.rawText ? `Raw Resume Text:\n${latestResume.rawText}\n` : ""}
 Provide an intelligent, personalized career strategy in JSON. Do NOT output any markdown tags outside the JSON block. Respond in this exact format:
 {
   "recommendations": [
@@ -414,11 +413,12 @@ const chatWithCoach = async (req, res) => {
     if (!message) {
       return res.status(400).json({ message: "Message is required" });
     }
-
     const advisor = await CareerAdvisor.findOne({ user: req.user._id });
     if (!advisor) {
       return res.status(404).json({ message: "Advisor profile not found. Please set up goals first." });
     }
+
+    const latestResume = await Resume.findOne({ user: req.user._id }).sort({ updatedAt: -1 });
 
     // Save user message
     advisor.chatHistory.push({ sender: "user", text: message });
@@ -439,7 +439,7 @@ const chatWithCoach = async (req, res) => {
     const contextPrompt = `You are "Coach Gemini", a friendly, highly encouraging personal AI Career Coach inside the CareerAI platform.
 Your purpose is to provide personalized, specific, and actionable career guidance.
 
-Candidate Profile Context:
+${latestResume && latestResume.rawText ? `Candidate's Resume Plain Text Content:\n${latestResume.rawText}\n\n` : ""}Candidate Profile Context:
 - Target Role: ${advisor.targetRole}
 - Current Skills: ${advisor.skillAnalysis.currentSkills.join(", ")}
 - Missing Skills needed: ${advisor.skillAnalysis.missingSkills.map((s) => s.name).join(", ")}

@@ -4,6 +4,7 @@
 // Rebuilt sticky glassmorphic navigation header - Linear/Vercel Style
 
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, Menu, Moon, Sun, Monitor, Command, Sparkles, User, LogOut, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -129,51 +130,14 @@ const Navbar = ({ title, setMobileMenuOpen }) => {
           <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-accent rounded-full ring-2 ring-base animate-pulse"></span>
         </button>
 
-        {/* User Dropdown */}
-        <div className="relative" ref={profileRef}>
-          <button
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-tr from-accent to-[#e0b02b] flex items-center justify-center text-black text-sm font-extrabold shadow-sm hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-          >
-            {user?.name?.charAt(0)?.toUpperCase() || "U"}
-          </button>
-          
-          <AnimatePresence>
-            {profileDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-2 w-48 rounded-xl border border-subtle bg-card shadow-lg p-1.5 space-y-1 z-40"
-              >
-                <div className="px-3 py-2 border-b border-subtle">
-                  <p className="text-xs font-bold text-main truncate">{user?.name || "Charan"}</p>
-                  <p className="text-[10px] text-muted truncate mt-0.5">{user?.email || "charan@career.ai"}</p>
-                </div>
-                
-                <button
-                  onClick={() => {
-                    setProfileDropdownOpen(false);
-                    window.location.href = "/profile";
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-muted hover:bg-surface-hover hover:text-main rounded-lg transition-colors cursor-pointer"
-                >
-                  <User size={13} />
-                  <span>View Profile</span>
-                </button>
-                
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
-                >
-                  <LogOut size={13} />
-                  <span>Log out</span>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Profile Link */}
+        <Link
+          to="/profile"
+          className="w-9 h-9 rounded-xl border border-subtle bg-surface/30 hover:bg-surface-hover flex items-center justify-center text-muted hover:text-main transition-all duration-200 cursor-pointer"
+          aria-label="View Profile"
+        >
+          <User size={15} />
+        </Link>
 
       </div>
     </header>

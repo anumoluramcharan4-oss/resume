@@ -58,16 +58,10 @@ const LandingNavbar = () => {
 
           <div className="flex items-center gap-4">
             <Link
-              to="/login"
-              className="text-sm font-medium text-muted hover:text-main transition-colors px-2"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/register"
+              to="/"
               className="px-5 py-2.5 rounded-full btn-primary text-sm font-semibold tracking-wide"
             >
-              Start for free
+              Go to Dashboard
             </Link>
           </div>
         </div>
@@ -98,9 +92,8 @@ const LandingNavbar = () => {
         >
           <a href="#features" className="text-muted py-2 border-b border-[rgba(212,175,55,0.1)]">Features</a>
           <a href="#how-it-works" className="text-muted py-2 border-b border-[rgba(212,175,55,0.1)]">How it works</a>
-          <Link to="/login" className="text-muted py-2 border-b border-[rgba(212,175,55,0.1)]">Log in</Link>
-          <Link to="/register" className="btn-primary text-center py-3 rounded-lg mt-2 font-semibold">
-            Start for free
+          <Link to="/" className="btn-primary text-center py-3 rounded-lg mt-2 font-semibold">
+            Go to Dashboard
           </Link>
         </motion.div>
       )}

@@ -12,6 +12,7 @@ import SkillBadge from "../components/SkillBadge";
 import ModernTemplate from "../components/templates/ModernTemplate";
 import MinimalTemplate from "../components/templates/MinimalTemplate";
 import ProfessionalTemplate from "../components/templates/ProfessionalTemplate";
+import ATSFriendlyTemplate from "../components/templates/ATSFriendlyTemplate";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
@@ -46,6 +47,7 @@ const templates = [
   { id: "modern", label: "Modern", desc: "Bold and contemporary" },
   { id: "minimal", label: "Minimal", desc: "Clean and simple" },
   { id: "professional", label: "Professional", desc: "Classic and formal" },
+  { id: "ats-friendly", label: "ATS-Friendly", desc: "Optimized for system screening" },
 ];
 
 const ResumeBuilder = () => {
@@ -162,6 +164,7 @@ const ResumeBuilder = () => {
     switch (resume.template) {
       case "minimal": return <MinimalTemplate {...props} />;
       case "professional": return <ProfessionalTemplate {...props} />;
+      case "ats-friendly": return <ATSFriendlyTemplate {...props} />;
       default: return <ModernTemplate {...props} />;
     }
   };

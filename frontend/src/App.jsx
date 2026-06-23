@@ -17,12 +17,14 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumePreview from "./pages/ResumePreview";
-import ResumeGallery from "./pages/ResumeGallery";
+import ResumeHub from "./pages/ResumeHub";
+import PublicResume from "./pages/PublicResume";
 import AISuggestions from "./pages/AISuggestions";
 import JobsPage from "./pages/JobsPage";
 import JobMatchPage from "./pages/JobMatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import CareerAdvisor from "./pages/CareerAdvisor";
+import ResumeImport from "./pages/ResumeImport";
 
 function App() {
   return (
@@ -53,14 +55,17 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/gallery" element={<ResumeGallery />} />
+            <Route path="/resume/shared/:shareId" element={<PublicResume />} />
+            <Route path="/gallery" element={<Navigate to="/resume-hub" replace />} />
 
-            {/* ---- Protected Routes (require login) ---- */}
+            {/* ---- Protected Routes (all publicly accessible now via simplified ProtectedRoute) ---- */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/resume-hub" element={<ResumeHub />} />
               <Route path="/resume/new" element={<ResumeBuilder />} />
               <Route path="/resume/:id" element={<ResumePreview />} />
               <Route path="/resume/:id/edit" element={<ResumeBuilder />} />
+              <Route path="/resume/import" element={<ResumeImport />} />
               <Route path="/ai" element={<AISuggestions />} />
               <Route path="/jobs" element={<JobsPage />} />
               <Route path="/jobs/match" element={<JobMatchPage />} />
