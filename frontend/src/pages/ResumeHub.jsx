@@ -671,14 +671,14 @@ const ResumeHub = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="glass rounded-2xl p-5 border border-subtle flex items-center gap-4 relative overflow-hidden group hover:border-accent/40 transition-colors"
+            className="card-clean rounded-2xl p-5 border border-white/[0.08] bg-[#131316] flex items-center gap-4 hover:border-white/[0.14] transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-              <FileText size={20} />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <FileText size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Total Resumes</p>
-              <h3 className="text-xl font-extrabold text-main mt-0.5">{metrics.totalResumes}</h3>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Total Resumes</p>
+              <h3 className="text-xl font-bold text-white mt-0.5">{metrics.totalResumes}</h3>
             </div>
           </motion.div>
 
@@ -687,14 +687,14 @@ const ResumeHub = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass rounded-2xl p-5 border border-subtle flex items-center gap-4 relative overflow-hidden group hover:border-accent/40 transition-colors"
+            className="card-clean rounded-2xl p-5 border border-white/[0.08] bg-[#131316] flex items-center gap-4 hover:border-white/[0.14] transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-              <Target size={20} />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Target size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Avg ATS Score</p>
-              <h3 className="text-xl font-extrabold text-main mt-0.5">{metrics.averageAtsScore}%</h3>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Avg ATS Score</p>
+              <h3 className="text-xl font-bold text-white mt-0.5">{metrics.averageAtsScore}%</h3>
             </div>
           </motion.div>
 
@@ -703,14 +703,14 @@ const ResumeHub = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="glass rounded-2xl p-5 border border-subtle flex items-center gap-4 relative overflow-hidden group hover:border-accent/40 transition-colors"
+            className="card-clean rounded-2xl p-5 border border-white/[0.08] bg-[#131316] flex items-center gap-4 hover:border-white/[0.14] transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
-              <Eye size={20} />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Eye size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Resume Views</p>
-              <h3 className="text-xl font-extrabold text-main mt-0.5">{metrics.totalViews}</h3>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Resume Views</p>
+              <h3 className="text-xl font-bold text-white mt-0.5">{metrics.totalViews}</h3>
             </div>
           </motion.div>
 
@@ -719,41 +719,41 @@ const ResumeHub = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass rounded-2xl p-5 border border-subtle flex items-center gap-4 relative overflow-hidden group hover:border-accent/40 transition-colors"
+            className="card-clean rounded-2xl p-5 border border-white/[0.08] bg-[#131316] flex items-center gap-4 hover:border-white/[0.14] transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-              <Download size={20} />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Download size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Downloads</p>
-              <h3 className="text-xl font-extrabold text-main mt-0.5">{metrics.totalDownloads}</h3>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">Downloads</p>
+              <h3 className="text-xl font-bold text-white mt-0.5">{metrics.totalDownloads}</h3>
             </div>
           </motion.div>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center border-b border-subtle pb-px mb-2">
+        <div className="flex items-center border-b border-white/[0.08] pb-px mb-2">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveHubTab("documents")}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold relative transition-colors cursor-pointer ${
-                activeHubTab === "documents" ? "text-accent font-bold" : "text-muted hover:text-main"
+                activeHubTab === "documents" ? "text-blue-400 font-bold" : "text-zinc-400 hover:text-white"
               }`}
             >
               My Documents
               {activeHubTab === "documents" && (
-                <motion.div layoutId="activeHubTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+                <motion.div layoutId="activeHubTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
               )}
             </button>
             <button
               onClick={() => setActiveHubTab("presets")}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold relative transition-colors cursor-pointer ${
-                activeHubTab === "presets" ? "text-accent font-bold" : "text-muted hover:text-main"
+                activeHubTab === "presets" ? "text-blue-400 font-bold" : "text-zinc-400 hover:text-white"
               }`}
             >
               Career Templates (Presets)
               {activeHubTab === "presets" && (
-                <motion.div layoutId="activeHubTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+                <motion.div layoutId="activeHubTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
               )}
             </button>
           </div>
@@ -762,15 +762,15 @@ const ResumeHub = () => {
         {activeHubTab === "documents" && (
           <>
             {/* SEARCH, FILTER & SORT BAR */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-subtle pb-6">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
           {/* Search bar */}
           <div className="relative flex-1 max-w-md">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
               <Search size={16} />
             </span>
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl input-dark text-xs placeholder-muted/50 leading-relaxed"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl input-clean text-xs placeholder-zinc-600 bg-[#0E0E11]"
               placeholder="Search by resume title or role..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -780,27 +780,27 @@ const ResumeHub = () => {
           {/* Filters & Sorting */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Status filters */}
-            <div className="flex rounded-lg bg-surface/30 border border-subtle p-0.5">
+            <div className="flex rounded-lg bg-[#0E0E11] border border-white/[0.08] p-0.5">
               <button
                 onClick={() => setStatusFilter("active")}
-                className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                  statusFilter === "active" ? "bg-accent text-black shadow-sm" : "text-muted hover:text-main"
+                className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  statusFilter === "active" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 Active
               </button>
               <button
                 onClick={() => setStatusFilter("archived")}
-                className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                  statusFilter === "archived" ? "bg-accent text-black shadow-sm" : "text-muted hover:text-main"
+                className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  statusFilter === "archived" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 Archived
               </button>
               <button
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                  statusFilter === "all" ? "bg-accent text-black shadow-sm" : "text-muted hover:text-main"
+                className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  statusFilter === "all" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 All

@@ -4,8 +4,12 @@
 // Centralized HTTP client.
 // All API calls go through this instance.
 // It auto-attaches the JWT token to every request.
-
+import { testSupabaseConnection } from "./testSupabase";
 import axios from "axios";
+
+// Run connection check
+testSupabaseConnection();
+
 
 // Create axios instance with base URL
 const api = axios.create({

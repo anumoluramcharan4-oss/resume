@@ -1,4 +1,4 @@
 // ESM Wrapper for es-toolkit compat
-import { throttle } from '/Users/ramcharantej/p1/frontend/node_modules/es-toolkit/dist/compat/function/throttle.mjs';
+import { throttle } from 'es-toolkit/compat';
 export default throttle;
 export { throttle };

@@ -58,7 +58,7 @@ const LandingNavbar = () => {
 
           <div className="flex items-center gap-4">
             <Link
-              to="/"
+              to="/dashboard"
               className="px-5 py-2.5 rounded-full btn-primary text-sm font-semibold tracking-wide"
             >
               Go to Dashboard
@@ -92,7 +92,7 @@ const LandingNavbar = () => {
         >
           <a href="#features" className="text-muted py-2 border-b border-[rgba(212,175,55,0.1)]">Features</a>
           <a href="#how-it-works" className="text-muted py-2 border-b border-[rgba(212,175,55,0.1)]">How it works</a>
-          <Link to="/" className="btn-primary text-center py-3 rounded-lg mt-2 font-semibold">
+          <Link to="/dashboard" className="btn-primary text-center py-3 rounded-lg mt-2 font-semibold">
             Go to Dashboard
           </Link>
         </motion.div>

@@ -1,4 +1,4 @@
 // ESM Wrapper for es-toolkit compat
-import { sortBy } from '/Users/ramcharantej/p1/frontend/node_modules/es-toolkit/dist/compat/array/sortBy.mjs';
+import { sortBy } from 'es-toolkit/compat';
 export default sortBy;
 export { sortBy };

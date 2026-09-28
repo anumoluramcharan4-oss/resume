@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        localStorage.setItem("token", "mock-token");
         api.defaults.headers.common["Authorization"] = `Bearer mock-token`;
         const res = await api.get("/auth/me");
         if (res.data?.user) {

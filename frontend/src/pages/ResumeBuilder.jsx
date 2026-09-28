@@ -495,44 +495,47 @@ const ResumeBuilder = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full items-start">
           
           {/* Editor Panel (45%) */}
-          <div className="lg:col-span-5 glass rounded-[1.5rem] border border-subtle flex flex-col h-[calc(100vh-140px)] shadow-sm">
+          <div className="lg:col-span-5 card-clean rounded-2xl border border-white/[0.08] bg-[#131316] flex flex-col h-[calc(100vh-130px)]">
             
             {/* Sticky Header & Tabs */}
-            <div className="sticky top-0 z-20 glass rounded-t-[1.5rem] border-b border-subtle">
-              <div className="p-5 pb-3">
-                <h2 className="text-main font-semibold text-lg flex items-center gap-2">
+            <div className="sticky top-0 z-20 bg-[#131316] rounded-t-2xl border-b border-white/[0.08]">
+              <div className="p-4 pb-2 flex items-center justify-between">
+                <h2 className="text-white font-semibold text-sm flex items-center gap-2">
                   <span>{steps[currentStep].emoji}</span> {steps[currentStep].label}
                 </h2>
+                <span className="text-[11px] text-zinc-500 font-mono">
+                  Step {currentStep + 1} of {steps.length}
+                </span>
               </div>
               
               {/* Step Progress Tabs */}
-              <div className="px-5 pb-4 flex items-center gap-4 overflow-x-auto custom-scrollbar">
+              <div className="px-4 pb-3 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
                 {steps.map((step, i) => (
                   <button
                     key={step.id}
                     onClick={() => setCurrentStep(i)}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 flex-shrink-0 tracking-wide ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                       i === currentStep
-                        ? "btn-primary shadow-md scale-105"
-                        : "btn-secondary text-muted hover:text-main hover:scale-105"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
                     }`}
                   >
                     <span>{step.emoji}</span>
-                    {step.label}
+                    <span>{step.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-full space-y-6"
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="w-full space-y-4"
                 >
                   {renderStep()}
                 </motion.div>
@@ -540,58 +543,58 @@ const ResumeBuilder = () => {
             </div>
 
             {/* Navigation */}
-            <div className="p-5 border-t border-subtle flex items-center justify-between">
+            <div className="p-4 border-t border-white/[0.08] bg-[#0E0E11] rounded-b-2xl flex items-center justify-between">
               <button
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                 disabled={currentStep === 0}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl btn-secondary text-sm disabled:opacity-30"
+                className="btn-secondary text-xs !py-2 !px-3 disabled:opacity-30"
               >
-                <ChevronLeft size={16} /> Back
+                <ChevronLeft size={14} className="mr-1" /> Back
               </button>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl btn-secondary text-sm lg:hidden"
+                  className="btn-secondary text-xs !py-2 !px-3 lg:hidden"
                 >
-                  <Eye size={15} /> Preview
+                  <Eye size={14} className="mr-1" /> Preview
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
                   id="save-resume-btn"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl btn-primary font-medium disabled:opacity-50"
+                  className="btn-primary text-xs !py-2 !px-4 disabled:opacity-50"
                 >
-                  <Save size={15} /> {saving ? "Saving..." : "Save"}
+                  <Save size={14} className="mr-1" /> {saving ? "Saving..." : "Save"}
                 </button>
               </div>
 
               <button
                 onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
                 disabled={currentStep === steps.length - 1}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl btn-secondary text-sm disabled:opacity-30"
+                className="btn-secondary text-xs !py-2 !px-3 disabled:opacity-30"
               >
-                Next <ChevronRight size={16} />
+                Next <ChevronRight size={14} className="ml-1" />
               </button>
             </div>
           </div>
 
           {/* Live Preview Panel (55%) */}
-          <div className="hidden lg:flex flex-col lg:col-span-7 glass rounded-[1.5rem] border border-subtle overflow-hidden h-[calc(100vh-140px)] shadow-sm">
-            <div className="px-6 py-4 border-b border-subtle flex items-center justify-between glass z-20">
-              <span className="text-sm text-muted font-medium flex items-center gap-2">
-                <Eye size={14} className="text-[var(--color-brand-500)]" /> Live Preview
+          <div className="hidden lg:flex flex-col lg:col-span-7 card-clean rounded-2xl border border-white/[0.08] bg-[#131316] overflow-hidden h-[calc(100vh-130px)]">
+            <div className="px-5 py-3 border-b border-white/[0.08] bg-[#0E0E11] flex items-center justify-between z-20">
+              <span className="text-xs text-zinc-400 font-medium flex items-center gap-2">
+                <Eye size={14} className="text-blue-500" /> Live Document Preview
               </span>
               <button
                 onClick={() => navigate(id && id !== "new" ? `/resume/${id}` : "/dashboard")}
-                className="flex items-center gap-1.5 text-xs text-[var(--color-brand-500)] hover:text-[var(--color-brand-600)] transition-colors bg-[var(--color-brand-500)]/10 px-3 py-1.5 rounded-lg font-medium"
+                className="btn-secondary text-xs !py-1 !px-2.5"
               >
                 Full Preview
               </button>
             </div>
             
             {/* Paper Container Background */}
-            <div className="flex-1 overflow-y-auto bg-base p-8 flex justify-center items-start custom-scrollbar">
+            <div className="flex-1 overflow-y-auto bg-[#0A0A0B] p-6 flex justify-center items-start custom-scrollbar">
               {/* Fixed A4 dimensions for accurate scaling */}
               <div 
                 className="w-[794px] min-h-[1123px] shrink-0 bg-white shadow-xl transform scale-[0.6] xl:scale-[0.7] 2xl:scale-[0.85] origin-top transition-transform duration-300 mb-[-30%] xl:mb-[-20%] 2xl:mb-0"

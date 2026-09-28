@@ -1,59 +1,28 @@
 // ==========================================
 // src/pages/AISuggestions.jsx
 // ==========================================
-// AI-powered resume analysis, ATS score, skill gaps, projects
+// AI-powered resume analysis & ATS diagnostic report
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles, Target, Brain, Zap,
-  AlertTriangle, CheckCircle, TrendingUp, BookOpen, RefreshCw
+  Sparkles,
+  Target,
+  Brain,
+  Zap,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  RefreshCw,
+  ArrowRight,
+  FileText
 } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
 import GlassCard from "../components/GlassCard";
 import SkillBadge from "../components/SkillBadge";
 import api from "../services/api";
 import toast from "react-hot-toast";
-
-// Animated ATS score ring
-const ATSRing = ({ score }) => {
-  const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
-
-  return (
-    <div className="flex items-center gap-6">
-      <div className="relative w-28 h-28">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={radius} fill="none" className="stroke-[var(--color-border-subtle)]" strokeWidth="8" />
-          <motion.circle
-            cx="50" cy="50" r={radius}
-            fill="none"
-            stroke={color}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-black text-main">{score}</span>
-          <span className="text-xs text-muted">/ 100</span>
-        </div>
-      </div>
-      <div>
-        <p className="text-muted text-sm">ATS Score</p>
-        <p className="text-main font-bold text-xl">
-          {score >= 80 ? "Excellent 🟢" : score >= 60 ? "Good 🟡" : "Needs Work 🔴"}
-        </p>
-      </div>
-    </div>
-  );
-};
 
 const AISuggestions = () => {
   const [searchParams] = useSearchParams();
@@ -71,27 +40,28 @@ const AISuggestions = () => {
   const [loading, setLoading] = useState({ ats: false, skills: false, projects: false, weakness: false });
   const [activeTab, setActiveTab] = useState("ats");
 
-  // Derive selected resume and skills
-  const selectedResume = resumes.find(r => r._id === selectedResumeId) || null;
-  const skills = selectedResume?.skills?.map(s => s.name) || [];
+  const selectedResume = resumes.find((r) => r._id === selectedResumeId) || null;
+  const skills = selectedResume?.skills?.map((s) => (typeof s === "string" ? s : s.name)) || [];
 
-  // Load resumes on mount
   useEffect(() => {
     api.get("/resumes").then((res) => {
-      setResumes(res.data.resumes);
+      const list = res.data.resumes || [];
+      setResumes(list);
+      if (!selectedResumeId && list.length > 0) {
+        setSelectedResumeId(list[0]._id);
+      }
     });
   }, []);
 
   const runAnalysis = async (type) => {
-    if (!selectedResume && !skills.length) return toast.error("Select a resume first!");
-    setLoading(l => ({ ...l, [type]: true }));
+    if (!selectedResume && !skills.length) return toast.error("Select a resume first");
+    setLoading((l) => ({ ...l, [type]: true }));
     try {
       let res;
       switch (type) {
         case "ats":
           res = await api.post("/ai/ats-score", { resume: selectedResume });
           setAtsResult(res.data);
-          // Save ATS score to resume
           if (selectedResumeId) {
             await api.put(`/resumes/${selectedResumeId}`, {
               atsScore: res.data.score,
@@ -104,7 +74,10 @@ const AISuggestions = () => {
           setSkillResult(res.data);
           break;
         case "projects":
-          res = await api.post("/ai/suggest-projects", { skills, experienceLevel: selectedResume?.experience?.length > 0 ? "intermediate" : "beginner" });
+          res = await api.post("/ai/suggest-projects", {
+            skills,
+            experienceLevel: selectedResume?.experience?.length > 0 ? "intermediate" : "beginner",
+          });
           setProjectResult(res.data);
           break;
         case "weakness":
@@ -112,341 +85,380 @@ const AISuggestions = () => {
           setWeaknessResult(res.data);
           break;
       }
-      toast.success("AI analysis complete! ✨");
+      toast.success("Analysis updated");
     } catch {
-      toast.error("AI analysis failed. Check your Gemini API key.");
+      toast.error("Analysis failed. Please check network/key.");
     } finally {
-      setLoading(l => ({ ...l, [type]: false }));
+      setLoading((l) => ({ ...l, [type]: false }));
     }
   };
 
   const tabs = [
-    { id: "ats", label: "ATS Score", icon: Target },
+    { id: "ats", label: "ATS Report", icon: Target },
     { id: "skills", label: "Skill Gaps", icon: Brain },
     { id: "projects", label: "Projects", icon: Zap },
-    { id: "weakness", label: "Weakness", icon: AlertTriangle },
+    { id: "weakness", label: "Bullet Point Audit", icon: AlertTriangle },
   ];
 
   return (
-    <DashboardLayout title="AI Career Suggestions">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Resume selector */}
-        <GlassCard className="border-subtle shadow-sm">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm text-muted font-medium mb-2 block">Select Resume to Analyze</label>
+    <DashboardLayout title="ATS Diagnostic">
+      <div className="space-y-6 max-w-5xl mx-auto">
+        
+        {/* Title */}
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-white">
+            Resume Audit & ATS Diagnostics
+          </h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Identify formatting compliance, keyword density, and phrasing improvements.
+          </p>
+        </div>
+
+        {/* Configuration Row */}
+        <div className="card-clean p-5 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-zinc-400 font-medium mb-1.5 block">
+                Select Resume
+              </label>
               <select
                 value={selectedResumeId}
                 onChange={(e) => setSelectedResumeId(e.target.value)}
-                className="w-full input-dark rounded-xl py-2.5 px-4 text-sm"
+                className="w-full input-clean text-xs bg-[#0E0E11]"
               >
                 <option value="">-- Choose a resume --</option>
                 {resumes.map((r) => (
-                  <option key={r._id} value={r._id}>{r.title}</option>
+                  <option key={r._id} value={r._id}>
+                    {r.title} ({new Date(r.updatedAt).toLocaleDateString()})
+                  </option>
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label className="text-sm text-muted font-medium mb-2 block">Target Role (optional)</label>
+            <div>
+              <label className="text-xs text-zinc-400 font-medium mb-1.5 block">
+                Target Role (Optional benchmark)
+              </label>
               <input
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g., Frontend Developer, Data Scientist"
-                className="w-full input-dark rounded-xl py-2.5 px-4 text-sm"
+                placeholder="e.g. Senior Frontend Engineer, Full Stack Developer"
+                className="w-full input-clean text-xs bg-[#0E0E11]"
               />
             </div>
           </div>
+
           {skills.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-subtle flex flex-wrap gap-2">
+            <div className="pt-3 border-t border-white/[0.06] flex flex-wrap gap-1.5 items-center">
+              <span className="text-xs text-zinc-500 mr-2">Extracted:</span>
               {skills.slice(0, 8).map((s, i) => (
                 <SkillBadge key={i} skill={s} />
               ))}
             </div>
           )}
-        </GlassCard>
-
-        {/* Tab selector */}
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm ${
-                activeTab === tab.id
-                  ? "bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] border border-[var(--color-brand-500)]/30"
-                  : "btn-secondary border-transparent"
-              }`}
-            >
-              <tab.icon size={15} />
-              {tab.label}
-            </button>
-          ))}
         </div>
 
-        {/* Tab content */}
+        {/* Tabs Bar */}
+        <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-white/[0.08] text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Icon size={14} className={isActive ? "text-blue-500" : "text-zinc-500"} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
           >
-            {/* ---- ATS Score Tab ---- */}
+            {/* ─────────────────────────────────────────────────────────────
+                ATS SCORE REPORT TAB
+                ───────────────────────────────────────────────────────────── */}
             {activeTab === "ats" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex justify-end">
                   <button
+                    type="button"
                     onClick={() => runAnalysis("ats")}
                     disabled={loading.ats || !selectedResumeId}
-                    id="run-ats-btn"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl btn-primary font-medium disabled:opacity-50"
+                    className="btn-primary text-xs !py-2.5 !px-4 disabled:opacity-50"
                   >
-                    {loading.ats ? <><RefreshCw size={14} className="animate-spin" /> Analyzing...</> : <><Sparkles size={14} /> Analyze Resume</>}
+                    {loading.ats ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin mr-1.5" /> Evaluating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={13} className="mr-1.5" /> Run ATS Diagnostic
+                      </>
+                    )}
                   </button>
                 </div>
 
-                {atsResult && (
-                  <div className="space-y-4">
-                    <GlassCard className="border-subtle shadow-sm">
-                      <ATSRing score={atsResult.score} />
-                      <div className="mt-6 p-4 rounded-xl bg-[var(--color-brand-500)]/5 border border-[var(--color-brand-500)]/10">
-                        <p className="text-muted text-sm">{atsResult.verdict}</p>
-                      </div>
-                    </GlassCard>
+                {atsResult ? (
+                  <div className="space-y-5">
+                    {/* Big Score Header */}
+                    <div className="card-clean p-6 md:p-8 rounded-2xl bg-[#131316] border border-white/[0.08]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-white/[0.08]">
+                        <div className="flex items-center gap-5">
+                          <div className="w-20 h-20 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex flex-col items-center justify-center shrink-0">
+                            <span className="text-3xl font-extrabold tracking-tight leading-none">
+                              {atsResult.score}
+                            </span>
+                            <span className="text-[10px] text-blue-400/80 uppercase font-medium mt-1">/ 100</span>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold text-white tracking-tight">
+                                {atsResult.score >= 80 ? "High Compatibility Pass" : atsResult.score >= 60 ? "Moderate Recruiter Pass" : "Formatting & Keyword Gaps"}
+                              </h3>
+                              <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${
+                                atsResult.score >= 80 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              }`}>
+                                {atsResult.score >= 80 ? "ATS Ready" : "Revisions Recommended"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-zinc-400 leading-relaxed max-w-xl">
+                              {atsResult.verdict || "Document formatting aligns with standard scanning algorithms."}
+                            </p>
+                          </div>
+                        </div>
 
-                    {/* Section scores */}
-                    {atsResult.sectionScores && (
-                      <GlassCard className="border-subtle shadow-sm">
-                        <h3 className="text-main font-semibold mb-4">Section Scores</h3>
-                        <div className="space-y-4">
+                        <Link
+                          to={`/resume/${selectedResumeId}/edit`}
+                          className="btn-secondary text-xs !py-2.5 !px-4 shrink-0"
+                        >
+                          Edit in Builder
+                        </Link>
+                      </div>
+
+                      {/* Breakdown Bars */}
+                      {atsResult.sectionScores && (
+                        <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-5">
                           {Object.entries(atsResult.sectionScores).map(([section, score]) => (
                             <div key={section}>
-                              <div className="flex justify-between text-sm mb-1.5">
-                                <span className="text-muted capitalize">{section}</span>
-                                <span className="text-main font-medium">{score}%</span>
+                              <div className="flex justify-between text-xs mb-1.5">
+                                <span className="text-zinc-400 capitalize">{section}</span>
+                                <span className="text-white font-medium">{score}%</span>
                               </div>
-                              <div className="w-full bg-[var(--color-border-subtle)] rounded-full h-1.5 overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${score}%` }}
-                                  transition={{ duration: 0.8, delay: 0.2 }}
-                                  className={`h-1.5 rounded-full ${score >= 80 ? "bg-green-500" : score >= 60 ? "bg-yellow-500" : "bg-red-500"}`}
+                              <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-blue-500 rounded-full"
+                                  style={{ width: `${score}%` }}
                                 />
                               </div>
                             </div>
                           ))}
                         </div>
-                      </GlassCard>
-                    )}
+                      )}
+                    </div>
 
-                    {/* Strengths & Weaknesses */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <GlassCard className="border-subtle shadow-sm">
-                        <h3 className="text-green-500 font-semibold mb-3 flex items-center gap-2"><CheckCircle size={16} /> Strengths</h3>
-                        <ul className="space-y-2">
+                    {/* Matched Strengths vs Missing Improvements */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="card-clean p-6 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                          <CheckCircle2 size={16} className="text-emerald-400" />
+                          <h4 className="text-sm font-semibold text-white">Confirmed Strengths</h4>
+                        </div>
+                        <ul className="space-y-2 text-xs text-zinc-300">
                           {atsResult.strengths?.map((s, i) => (
-                            <li key={i} className="text-sm text-muted flex items-start gap-2">
-                              <span className="text-green-500 mt-0.5">✓</span> {s}
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-emerald-400 mt-0.5">✓</span>
+                              <span>{s}</span>
                             </li>
                           ))}
                         </ul>
-                      </GlassCard>
-                      <GlassCard className="border-subtle shadow-sm">
-                        <h3 className="text-red-500 font-semibold mb-3 flex items-center gap-2"><AlertTriangle size={16} /> Improvements</h3>
-                        <ul className="space-y-2">
+                      </div>
+
+                      <div className="card-clean p-6 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                          <AlertTriangle size={16} className="text-amber-400" />
+                          <h4 className="text-sm font-semibold text-white">Actionable Improvements</h4>
+                        </div>
+                        <ul className="space-y-2 text-xs text-zinc-300">
                           {atsResult.improvements?.map((s, i) => (
-                            <li key={i} className="text-sm text-muted flex items-start gap-2">
-                              <span className="text-orange-500 mt-0.5">→</span> {s}
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-amber-400 mt-0.5">→</span>
+                              <span>{s}</span>
                             </li>
                           ))}
                         </ul>
-                      </GlassCard>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="card-clean p-10 rounded-2xl bg-[#131316] border border-dashed border-white/10 text-center space-y-3">
+                    <Target size={24} className="text-blue-500 mx-auto" />
+                    <h3 className="text-sm font-semibold text-white">Ready for ATS Evaluation</h3>
+                    <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                      Click the button above to run an end-to-end evaluation against ATS guidelines.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────
+                SKILL GAPS TAB
+                ───────────────────────────────────────────────────────────── */}
+            {activeTab === "skills" && (
+              <div className="space-y-5">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => runAnalysis("skills")}
+                    disabled={loading.skills}
+                    className="btn-primary text-xs !py-2.5 !px-4 disabled:opacity-50"
+                  >
+                    {loading.skills ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin mr-1.5" /> Scanning Gaps...
+                      </>
+                    ) : (
+                      <>
+                        <Brain size={13} className="mr-1.5" /> Analyze Skill Gaps
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {skillResult && (
+                  <div className="space-y-5">
+                    <div className="card-clean p-6 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-4">
+                      <h3 className="text-sm font-semibold text-white">Identified Missing Skills</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {skillResult.missingSkills?.map((skill, i) => (
+                          <div
+                            key={i}
+                            className="p-3.5 rounded-xl bg-[#0E0E11] border border-white/[0.06] text-xs space-y-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-white">{skill.name}</span>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20 uppercase">
+                                {skill.priority} priority
+                              </span>
+                            </div>
+                            <p className="text-zinc-400 leading-normal">{skill.reason}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* ---- Skill Gaps Tab ---- */}
-            {activeTab === "skills" && (
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => runAnalysis("skills")}
-                    disabled={loading.skills}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl btn-primary font-medium disabled:opacity-50"
-                  >
-                    {loading.skills ? <><RefreshCw size={14} className="animate-spin" /> Finding gaps...</> : <><Brain size={14} /> Analyze Skills</>}
-                  </button>
-                </div>
-                {skillResult && (
-                  <div className="space-y-4">
-                    <GlassCard className="border-subtle shadow-sm">
-                      <h3 className="text-main font-semibold mb-4">Missing Skills to Learn</h3>
-                      <div className="space-y-3">
-                        {skillResult.missingSkills?.map((skill, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-[var(--color-bg-surface-hover)] border border-subtle">
-                            <span className={`px-2 py-0.5 text-xs rounded-full ${skill.priority === "high" ? "bg-red-500/10 text-red-500" : skill.priority === "medium" ? "bg-yellow-500/10 text-yellow-500" : "bg-green-500/10 text-green-500"}`}>
-                              {skill.priority}
-                            </span>
-                            <div>
-                              <p className="text-main font-medium text-sm">{skill.name}</p>
-                              <p className="text-muted text-xs mt-0.5">{skill.reason}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </GlassCard>
-                    <GlassCard className="border-subtle shadow-sm">
-                      <h3 className="text-main font-semibold mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-[var(--color-brand-500)]" /> Trending Technologies</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        {skillResult.trendingSkills?.map((skill, i) => (
-                          <div key={i} className="p-3 rounded-xl glass border border-subtle">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-main font-medium text-sm">{skill.name}</span>
-                              <span className={`text-xs px-1.5 py-0.5 rounded-full ${skill.trend === "hot" ? "bg-red-500/10 text-red-500" : "bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)]"}`}>
-                                {skill.trend}
-                              </span>
-                            </div>
-                            <p className="text-muted text-xs">{skill.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </GlassCard>
-                    <GlassCard className="border-subtle shadow-sm">
-                      <h3 className="text-main font-semibold mb-4 flex items-center gap-2"><BookOpen size={16} className="text-purple-500" /> Recommended Certifications</h3>
-                      <div className="space-y-2">
-                        {skillResult.recommendedCertifications?.map((cert, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 rounded-xl glass border border-subtle">
-                            <div>
-                              <p className="text-main text-sm font-medium">{cert.name}</p>
-                              <p className="text-muted text-xs mt-0.5">{cert.provider}</p>
-                            </div>
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${cert.difficulty === "beginner" ? "border-green-500/20 text-green-500 bg-green-500/5" : cert.difficulty === "intermediate" ? "border-yellow-500/20 text-yellow-500 bg-yellow-500/5" : "border-red-500/20 text-red-500 bg-red-500/5"}`}>
-                              {cert.difficulty}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </GlassCard>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ---- Project Suggestions Tab ---- */}
+            {/* ─────────────────────────────────────────────────────────────
+                PROJECTS TAB
+                ───────────────────────────────────────────────────────────── */}
             {activeTab === "projects" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex justify-end">
                   <button
+                    type="button"
                     onClick={() => runAnalysis("projects")}
                     disabled={loading.projects}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl btn-primary font-medium disabled:opacity-50"
+                    className="btn-primary text-xs !py-2.5 !px-4 disabled:opacity-50"
                   >
-                    {loading.projects ? <><RefreshCw size={14} className="animate-spin" /> Generating...</> : <><Zap size={14} /> Get Project Ideas</>}
+                    {loading.projects ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin mr-1.5" /> Curating...
+                      </>
+                    ) : (
+                      <>
+                        <Zap size={13} className="mr-1.5" /> Generate Project Concepts
+                      </>
+                    )}
                   </button>
                 </div>
+
                 {projectResult && (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {projectResult.projects?.map((proj, i) => (
-                      <GlassCard key={i} className="border-subtle hover:border-focus transition-all duration-300 shadow-sm hover:shadow-md">
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="text-main font-semibold">{proj.title}</h3>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border flex-shrink-0 ${
-                            proj.difficulty === "beginner" ? "border-green-500/20 text-green-500 bg-green-500/5" :
-                            proj.difficulty === "intermediate" ? "border-yellow-500/20 text-yellow-500 bg-yellow-500/5" :
-                            "border-red-500/20 text-red-500 bg-red-500/5"
-                          }`}>
-                            {proj.difficulty}
-                          </span>
-                        </div>
-                        <p className="text-muted text-sm mb-4">{proj.description}</p>
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {proj.technologies?.map((t, ti) => (
-                            <SkillBadge key={ti} skill={t} color="cyan" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {projectResult.projects?.map((p, idx) => (
+                      <div
+                        key={idx}
+                        className="card-clean p-5 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-2.5"
+                      >
+                        <h4 className="text-sm font-semibold text-white">{p.title}</h4>
+                        <p className="text-xs text-zinc-400 leading-relaxed">{p.description}</p>
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {p.techStack?.map((t, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className="px-2 py-0.5 rounded text-[10px] bg-white/[0.04] text-zinc-300 border border-white/[0.08]"
+                            >
+                              {t}
+                            </span>
                           ))}
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted mt-auto pt-2 border-t border-subtle">
-                          <span>⏱ {proj.estimatedTime}</span>
-                        </div>
-                      </GlassCard>
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
             )}
 
-            {/* ---- Weakness Analyzer Tab ---- */}
+            {/* ─────────────────────────────────────────────────────────────
+                WEAKNESS / BULLET POINT AUDIT TAB
+                ───────────────────────────────────────────────────────────── */}
             {activeTab === "weakness" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex justify-end">
                   <button
+                    type="button"
                     onClick={() => runAnalysis("weakness")}
-                    disabled={loading.weakness || !selectedResumeId}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl btn-primary font-medium disabled:opacity-50"
+                    disabled={loading.weakness}
+                    className="btn-primary text-xs !py-2.5 !px-4 disabled:opacity-50"
                   >
-                    {loading.weakness ? <><RefreshCw size={14} className="animate-spin" /> Analyzing...</> : <><AlertTriangle size={14} /> Analyze Weaknesses</>}
+                    {loading.weakness ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin mr-1.5" /> Auditing...
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle size={13} className="mr-1.5" /> Audit Phrasing
+                      </>
+                    )}
                   </button>
                 </div>
+
                 {weaknessResult && (
-                  <div className="space-y-4">
-                    {/* Overall verdict */}
-                    <GlassCard className="border-subtle shadow-sm">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] border border-[var(--color-brand-500)]/20 capitalize">
-                          {weaknessResult.overallLevel} level
-                        </span>
-                      </div>
-                      <p className="text-muted text-sm">{weaknessResult.overallVerdict}</p>
-                    </GlassCard>
-
-                    {/* Weaknesses */}
-                    <GlassCard className="border-subtle shadow-sm">
-                      <h3 className="text-main font-semibold mb-4">Detected Weaknesses</h3>
-                      <div className="space-y-3">
-                        {weaknessResult.weaknesses?.map((w, i) => (
-                          <div key={i} className={`p-4 rounded-xl border ${w.severity === "high" ? "border-red-500/20 bg-red-500/5" : w.severity === "medium" ? "border-yellow-500/20 bg-yellow-500/5" : "border-green-500/20 bg-green-500/5"}`}>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-main font-medium text-sm">{w.area}</span>
-                              <span className={`text-xs px-1.5 py-0.5 rounded-full ${w.severity === "high" ? "text-red-500" : w.severity === "medium" ? "text-yellow-500" : "text-green-500"}`}>
-                                {w.severity} priority
-                              </span>
-                            </div>
-                            <p className="text-muted text-xs mb-2">{w.issue}</p>
-                            <p className="text-muted text-xs">💡 {w.fix}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </GlassCard>
-
-                    {/* Learning path */}
-                    {weaknessResult.learningPath && (
-                      <GlassCard className="border-subtle shadow-sm">
-                        <h3 className="text-main font-semibold mb-4">📅 Your Learning Roadmap</h3>
-                        <div className="space-y-3">
-                          {Object.entries(weaknessResult.learningPath).map(([period, task]) => (
-                            <div key={period} className="flex gap-3">
-                              <div className="w-24 flex-shrink-0 text-xs text-[var(--color-brand-500)] font-medium pt-0.5 capitalize">{period.replace("_", " ")}</div>
-                              <div className="flex-1 p-3 rounded-xl glass border border-subtle text-muted text-sm">{task}</div>
-                            </div>
-                          ))}
+                  <div className="card-clean p-6 rounded-2xl bg-[#131316] border border-white/[0.08] space-y-4">
+                    <h3 className="text-sm font-semibold text-white">Phrasing Diagnostic</h3>
+                    <div className="space-y-3">
+                      {weaknessResult.weaknesses?.map((w, idx) => (
+                        <div key={idx} className="p-4 rounded-xl bg-[#0E0E11] border border-white/[0.06] text-xs space-y-1.5">
+                          <p className="font-semibold text-amber-400">Issue: {w.issue}</p>
+                          <p className="text-zinc-400"><b className="text-zinc-300">Original:</b> "{w.original}"</p>
+                          <p className="text-emerald-400"><b className="text-zinc-300">Suggested:</b> "{w.suggested}"</p>
                         </div>
-                      </GlassCard>
-                    )}
-
-                    {/* Encouragement */}
-                    {weaknessResult.encouragement && (
-                      <GlassCard className="border-[var(--color-brand-500)]/20 gradient-bg-subtle">
-                        <p className="text-[var(--color-brand-500)] text-sm italic font-medium">✨ {weaknessResult.encouragement}</p>
-                      </GlassCard>
-                    )}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
             )}
           </motion.div>
         </AnimatePresence>
+
       </div>
     </DashboardLayout>
   );

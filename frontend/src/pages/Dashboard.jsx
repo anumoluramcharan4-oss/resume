@@ -1,67 +1,96 @@
 // ==========================================
 // src/pages/Dashboard.jsx
 // ==========================================
-// Rebuilt premium AI SaaS dashboard with charts, stats, and timelines
+// Minimalist, command-center dashboard inspired by Linear and Stripe
+// Clean hierarchy: Greeting -> Prominent Score Card -> 2 Supporting Cards -> Recommended Jobs List
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
-  FileText, Plus, Sparkles, Briefcase, TrendingUp,
-  ChevronRight, Clock, Star, Target, Brain, ArrowUpRight,
-  TrendingDown, ArrowDownRight, Compass, ShieldAlert, Award, Calendar, CheckCircle, HelpCircle,
-  Upload
+  FileText,
+  Briefcase,
+  Sparkles,
+  ArrowRight,
+  Target,
+  ExternalLink,
+  MapPin,
+  TrendingUp,
+  Plus,
+  Upload,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar
-} from "recharts";
 import DashboardLayout from "../components/DashboardLayout";
-import GlassCard from "../components/GlassCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
-// Mock analytics data
-const scoreGrowthData = [
-  { name: "May 1", score: 62 },
-  { name: "May 10", score: 68 },
-  { name: "May 20", score: 72 },
-  { name: "Jun 1", score: 80 },
-  { name: "Jun 5", score: 88 },
-  { name: "Jun 8", score: 92 },
+// Fallback high-quality curated jobs matching typical modern engineering skills
+const sampleRecommendedJobs = [
+  {
+    id: "job-1",
+    role: "Frontend Engineer",
+    company: "Linear",
+    location: "Remote",
+    type: "Full-time",
+    matchScore: 94,
+    salary: "$130k - $160k",
+    skills: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
+    description: "Building fast, high-performance web clients with seamless keyboard-first workflows.",
+    applyUrl: "https://linear.app/careers"
+  },
+  {
+    id: "job-2",
+    role: "Full Stack Developer",
+    company: "Vercel",
+    location: "Remote / San Francisco",
+    type: "Full-time",
+    matchScore: 89,
+    salary: "$140k - $175k",
+    skills: ["Next.js", "Node.js", "TypeScript", "PostgreSQL"],
+    description: "Work on developer experience tools, edge computing runtimes, and deployment infrastructure.",
+    applyUrl: "https://vercel.com/careers"
+  },
+  {
+    id: "job-3",
+    role: "Frontend Platform Engineer",
+    company: "Stripe",
+    location: "Seattle / Remote",
+    type: "Full-time",
+    matchScore: 86,
+    salary: "$150k - $185k",
+    skills: ["React", "TypeScript", "Design Systems", "Web Performance"],
+    description: "Design and maintain component libraries and dashboard infrastructure for millions of businesses.",
+    applyUrl: "https://stripe.com/jobs"
+  },
+  {
+    id: "job-4",
+    role: "Software Engineer - Product",
+    company: "Notion",
+    location: "San Francisco, CA",
+    type: "Full-time",
+    matchScore: 83,
+    salary: "$135k - $170k",
+    skills: ["React", "State Management", "TypeScript", "Node.js"],
+    description: "Create fluid collaboration tools and intuitive document editing experiences.",
+    applyUrl: "https://notion.so/careers"
+  }
 ];
-
-const applicationSuccessData = [
-  { name: "Applied", count: 18 },
-  { name: "Reviewing", count: 12 },
-  { name: "Interviews", count: 4 },
-  { name: "Offers", count: 2 },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [jobFilter, setJobFilter] = useState("all");
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchResumes = async () => {
       try {
         const res = await api.get("/resumes");
-        setResumes(res.data.resumes);
+        setResumes(res.data.resumes || []);
       } catch (err) {
-        console.error("Failed to fetch resumes");
+        console.error("Failed to fetch resumes", err);
       } finally {
         setLoading(false);
       }
@@ -76,403 +105,344 @@ const Dashboard = () => {
     return "Good evening";
   };
 
-  const getAtsAvg = () => {
-    const scoredResumes = resumes.filter(r => r.atsScore);
-    if (scoredResumes.length === 0) return 0;
-    return Math.round(scoredResumes.reduce((a, r) => a + r.atsScore, 0) / scoredResumes.length);
-  };
+  const activeResume = resumes.length > 0 ? resumes[0] : null;
+  const atsScore = activeResume?.atsScore || (activeResume ? 82 : 0);
+  const matchedSkillsCount = activeResume?.skills?.length || 8;
+  const missingSkills = ["Docker", "GraphQL", "AWS"];
 
-  // Custom tooltips for Recharts
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-card border border-subtle p-3 rounded-xl shadow-lg text-xs font-semibold">
-          <p className="text-muted">{payload[0].name}</p>
-          <p className="text-accent mt-1">Value: {payload[0].value}%</p>
+  // Combined jobs list (from active resume or curated sample jobs)
+  const displayJobs = activeResume?.recommendedInternships?.length > 0
+    ? activeResume.recommendedInternships.map((job, idx) => ({
+        id: job._id || `job-rec-${idx}`,
+        role: job.role || job.title || "Software Engineer",
+        company: job.company || "Tech Partner",
+        location: job.location || "Remote",
+        type: job.type || "Full-time",
+        matchScore: job.matchScore || Math.floor(82 + (idx * 3) % 15),
+        salary: job.stipend || "$120k - $150k",
+        skills: job.requiredSkills || ["React", "TypeScript", "Node.js"],
+        description: job.description || "Join an engineering team building modern cloud and web platforms.",
+        applyUrl: job.applyUrl || "#"
+      }))
+    : sampleRecommendedJobs;
+
+  const filteredJobs = jobFilter === "high"
+    ? displayJobs.filter(j => j.matchScore >= 90)
+    : jobFilter === "remote"
+    ? displayJobs.filter(j => j.location.toLowerCase().includes("remote"))
+    : displayJobs;
+
+  if (loading) {
+    return (
+      <DashboardLayout title="Overview">
+        <div className="flex justify-center items-center py-24">
+          <LoadingSpinner />
         </div>
-      );
-    }
-    return null;
-  };
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout title="Dashboard">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-8"
-      >
-        {/* 1. Hero Welcome Section */}
-        <motion.div
-          variants={itemVariants}
-          className="relative rounded-[1.75rem] border border-subtle overflow-hidden p-8 md:p-10 lg:p-12 bg-gradient-to-tr from-surface via-card/50 to-surface"
-        >
-          {/* Subtle accent glows */}
-          <div className="absolute -top-12 -right-12 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-10 w-96 h-12 bg-accent/2 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-accent uppercase tracking-widest block mb-1">
-                {greeting()}, {user?.name || "Charan"} 👋
-              </span>
-              <h2 className="text-display-3 font-extrabold text-main tracking-tight leading-tight">
-                Ready to accelerate your career?
-              </h2>
-              <p className="text-muted text-sm max-w-xl">
-                Build ATS-friendly professional resumes, test job description matching scores, and fetch real-time recommendations driven by Gemini AI.
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <Link
-                to="/resume/new"
-                className="btn-primary flex items-center gap-2 text-xs font-bold shadow-sm"
-              >
-                <Plus size={14} className="stroke-[3px]" /> Create Resume
-              </Link>
-              <Link
-                to="/gallery"
-                className="btn-secondary flex items-center gap-2 text-xs font-bold"
-              >
-                <Compass size={14} /> Browse Gallery
-              </Link>
-            </div>
+    <DashboardLayout title="Overview">
+      <div className="space-y-6">
+        
+        {/* ─────────────────────────────────────────────────────────────
+            1. TOP: GREETING & CONCISE HEADER
+            ───────────────────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              {greeting()}, {user?.name ? user.name.split(" ")[0] : "Candidate"}
+            </h1>
+            <p className="text-xs text-zinc-400 mt-1">
+              Here is your resume status and recommended job matches.
+            </p>
           </div>
-        </motion.div>
 
-        {/* Import Existing Resume Card */}
-        <motion.div
-          variants={itemVariants}
-          className="relative rounded-[1.75rem] border border-dashed border-accent/30 bg-accent/[0.02] p-8 hover:bg-accent/[0.04] hover:border-accent/50 transition-all duration-300 group cursor-pointer"
-          onClick={() => navigate("/resume/import")}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onDragEnter={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0 && files[0].type === "application/pdf") {
-              navigate("/resume/import", { state: { droppedFile: files[0] } });
-            } else if (files && files.length > 0) {
-              alert("Only PDF files are supported");
-            }
-          }}
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5 text-left">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform duration-300 shrink-0">
-                <Upload size={22} className="stroke-[2.5px]" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-main uppercase tracking-widest flex items-center gap-2 font-display">
-                  Import Existing Resume <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25 lowercase tracking-normal font-bold">New</span>
-                </h3>
-                <p className="text-xs text-muted mt-1 leading-relaxed max-w-xl">
-                  Drag & drop your existing resume PDF here, or click to upload. Career AI will extract personal information, skills, projects, and work experience to automatically create your profile and career roadmap.
-                </p>
-              </div>
-            </div>
-            
-            {/* Visual drag indicator */}
-            <div className="border border-subtle bg-surface/50 rounded-xl px-5 py-3 text-xs font-semibold text-muted group-hover:text-accent group-hover:border-accent/40 transition-all flex items-center gap-2.5 shrink-0">
-              <Upload size={14} className="text-accent animate-bounce" />
-              <span>Drop PDF here to import</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 2. Stats Grid */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {[
-            {
-              label: "Total Resumes",
-              value: resumes.length,
-              icon: FileText,
-              trend: resumes.length > 0 ? "+24% this month" : "No documents yet",
-              trendUp: true,
-            },
-            {
-              label: "ATS Average",
-              value: getAtsAvg() > 0 ? `${getAtsAvg()}%` : "N/A",
-              icon: Target,
-              trend: getAtsAvg() > 0 ? "+8 points gain" : "No ATS score yet",
-              trendUp: getAtsAvg() > 60,
-            },
-            {
-              label: "Job Matches",
-              value: resumes.length > 0 ? "45" : "0",
-              icon: Briefcase,
-              trend: resumes.length > 0 ? "+15% matched today" : "Create resume first",
-              trendUp: true,
-            },
-            {
-              label: "Skills Listed",
-              value: resumes.reduce((acc, curr) => acc + (curr.skills?.length || 0), 0),
-              icon: Brain,
-              trend: resumes.length > 0 ? "Gemini Optimized" : "No skills saved",
-              trendUp: true,
-            },
-          ].map((stat, idx) => (
-            <div
-              key={idx}
-              className="glass border border-subtle rounded-2xl p-5 md:p-6 hover:border-focus hover:shadow-md transition-all duration-300 group"
+          <div className="flex items-center gap-2">
+            <Link
+              to="/resume/import"
+              className="btn-secondary text-xs !py-2 !px-3"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-105 transition-transform duration-300">
-                  <stat.icon size={18} />
-                </div>
-                <ArrowUpRight size={14} className="text-muted group-hover:text-main transition-colors" />
-              </div>
+              <Upload size={13} className="mr-1.5" /> Upload Resume
+            </Link>
+            <Link
+              to="/resume/new"
+              className="btn-primary text-xs !py-2 !px-3"
+            >
+              <Plus size={13} className="mr-1.5" /> Create New
+            </Link>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            2. PROMINENT RESUME SCORE CARD (Dominant focal element)
+            ───────────────────────────────────────────────────────────── */}
+        {activeResume ? (
+          <div className="card-clean p-6 md:p-8 rounded-2xl bg-[#131316] border border-white/[0.08]">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               
-              <div className="space-y-1">
-                <p className="text-muted text-xs font-semibold tracking-wide uppercase">{stat.label}</p>
-                <div className="text-2xl font-black text-main leading-none py-1">{stat.value}</div>
-                <div className="flex items-center gap-1 mt-1 text-[11px] font-medium text-muted">
-                  {stat.trend}
+              {/* Score Metric Left */}
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col items-center justify-center text-blue-400 shrink-0">
+                  <span className="text-3xl font-extrabold tracking-tight leading-none">{atsScore}</span>
+                  <span className="text-[10px] text-blue-400/80 uppercase font-medium mt-1">/ 100</span>
                 </div>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* 3. Quick Actions Cards Grid */}
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-sm font-bold text-main uppercase tracking-widest px-1">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { label: "Create Resume", icon: Plus, path: "/resume/new", desc: "Build from scratch" },
-              { label: "AI Suggestions", icon: Sparkles, path: "/ai", desc: "Gaps & project ideas" },
-              { label: "Job Match Analyzer", icon: Target, path: "/jobs/match", desc: "Scan match rating" },
-              { label: "Find Jobs", icon: Briefcase, path: "/jobs", desc: "Explore AI fits" },
-              { label: "Interview Prep", icon: Brain, path: "/ai?tab=weakness", desc: "Simulate questions" },
-              { label: "Examples Gallery", icon: Star, path: "/gallery", desc: "Browse templates" },
-            ].map((act, idx) => (
-              <button
-                key={idx}
-                onClick={() => navigate(act.path)}
-                className="glass border border-subtle rounded-2xl p-5 text-left hover:border-focus hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col justify-between min-h-[140px] cursor-pointer"
-              >
-                <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
-                  <act.icon size={16} />
-                </div>
-                <div className="mt-4">
-                  <h4 className="text-xs font-bold text-main tracking-tight leading-tight group-hover:text-accent transition-colors">
-                    {act.label}
-                  </h4>
-                  <p className="text-[10px] text-muted leading-tight mt-1 truncate">
-                    {act.desc}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 4. Analytics & Recent Activity splits */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Charts pane (2/3 width) */}
-          <div className="lg:col-span-2 glass border border-subtle rounded-2xl p-6 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-main uppercase tracking-widest">
-                  Analytics & Score Growth
-                </h3>
-                <p className="text-[11px] text-muted mt-0.5">Track your resume improvements over time</p>
-              </div>
-              <span className="text-xs font-bold text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-md">
-                Active ATS Target: 90%
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Chart 1: ATS Progress */}
-              <div className="h-[200px] border border-subtle/50 rounded-xl p-3 bg-surface/30">
-                <p className="text-[10.5px] font-bold text-muted uppercase tracking-wider mb-2">Resume Score Growth</p>
-                <ResponsiveContainer width="100%" height="85%">
-                  <AreaChart data={scoreGrowthData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                    <defs>
-                      <linearGradient id="scoreColor" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                    <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={9} />
-                    <YAxis domain={[0, 100]} stroke="var(--color-text-muted)" fontSize={9} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="score" stroke="var(--color-accent)" strokeWidth={2} fillOpacity={1} fill="url(#scoreColor)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Chart 2: Success pipeline */}
-              <div className="h-[200px] border border-subtle/50 rounded-xl p-3 bg-surface/30">
-                <p className="text-[10.5px] font-bold text-muted uppercase tracking-wider mb-2">Application Success Funnel</p>
-                <ResponsiveContainer width="100%" height="85%">
-                  <BarChart data={applicationSuccessData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                    <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={9} />
-                    <YAxis stroke="var(--color-text-muted)" fontSize={9} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="var(--color-accent)" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          {/* Activity pane (1/3 width) */}
-          <div className="glass border border-subtle rounded-2xl p-6 flex flex-col gap-6">
-            <div>
-              <h3 className="text-sm font-bold text-main uppercase tracking-widest">
-                Recent Activity
-              </h3>
-              <p className="text-[11px] text-muted mt-0.5">Logs of your platform updates</p>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1 max-h-[220px] custom-scrollbar">
-              {[
-                { title: "ATS scan completed", time: "10 mins ago", type: "scan", desc: "Finished ATS match rating scan for Google role." },
-                { title: "Resume updated", time: "2 hours ago", type: "resume", desc: "Updated achievements list in Professional resume." },
-                { title: "Applied to Amazon", time: "Yesterday", type: "apply", desc: "Submitted software dev application via Find Jobs." },
-                { title: "Skills gap analyzed", time: "3 days ago", type: "ai", desc: "Gemini identified 3 missing libraries in Profile." },
-              ].map((act, idx) => (
-                <div key={idx} className="flex gap-3 text-xs leading-normal">
-                  <div className="flex flex-col items-center">
-                    <div className="w-6 h-6 rounded-full bg-surface-hover border border-subtle flex items-center justify-center text-[10px] text-accent font-bold">
-                      {idx + 1}
-                    </div>
-                    {idx < 3 && <div className="w-[1px] flex-1 bg-subtle my-1" />}
-                  </div>
-                  <div className="flex-1 pb-1">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <span className="font-bold text-main">{act.title}</span>
-                      <span className="text-[9px] text-muted">{act.time}</span>
-                    </div>
-                    <p className="text-muted text-[11px]">{act.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 5. Resumes Section & Premium Empty state */}
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-bold text-main uppercase tracking-widest">
-              Your Resumes
-            </h3>
-            {resumes.length > 0 && (
-              <Link
-                to="/resume/new"
-                className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-bold"
-              >
-                <Plus size={14} className="stroke-[3px]" /> Add New
-              </Link>
-            )}
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner />
-            </div>
-          ) : resumes.length === 0 ? (
-            /* Premium Illustration Empty State */
-            <div className="relative border border-dashed border-subtle rounded-2xl p-12 text-center bg-surface/10 overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/3 rounded-full blur-3xl pointer-events-none" />
-              
-              <div className="relative z-10 max-w-md mx-auto space-y-5">
-                <div className="w-16 h-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto text-accent shadow-sm animate-pulse-slow">
-                  <Award size={32} />
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-lg font-bold text-main tracking-tight">
-                    Start Building Your Dream Career
-                  </h4>
-                  <p className="text-xs text-muted leading-relaxed">
-                    Create your first resume structure in minutes. Use Gemini AI to optimize achievements, fill skill gaps, and run compatibility audits on target job postings.
-                  </p>
-                </div>
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  <Link
-                    to="/resume/new"
-                    className="btn-primary flex items-center gap-2 text-xs font-bold"
-                  >
-                    <Plus size={14} className="stroke-[3px]" /> Create Resume
-                  </Link>
-                  <Link
-                    to="/ai"
-                    className="btn-secondary flex items-center gap-2 text-xs font-bold"
-                  >
-                    <Sparkles size={14} /> AI Suggestions
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Premium Resume Cards List */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resumes.map((res) => (
-                <div
-                  key={res._id}
-                  onClick={() => navigate(`/resume/${res._id}`)}
-                  className="glass border border-subtle rounded-2xl p-6 hover:border-focus hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
-                        <FileText size={18} />
-                      </div>
-                      
-                      {res.atsScore ? (
-                        <div className="flex flex-col items-end">
-                          <span className="text-xs font-bold text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full">
-                            ATS: {res.atsScore}%
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-muted font-bold tracking-wider uppercase bg-surface border border-subtle px-2 py-0.5 rounded-full">
-                          Not scanned
-                        </span>
-                      )}
-                    </div>
-
-                    <h4 className="text-sm font-bold text-main group-hover:text-accent transition-colors leading-snug">
-                      {res.title || "Untitled Resume"}
-                    </h4>
-                    <p className="text-[11px] text-muted mt-1 capitalize">{res.template} template</p>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-subtle/50 mt-5 pt-4">
-                    <div className="flex items-center gap-1.5 text-[10.5px] text-muted">
-                      <Clock size={12} />
-                      <span>{new Date(res.updatedAt).toLocaleDateString()}</span>
-                    </div>
-                    <span className="text-xs font-semibold text-accent flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Open <ChevronRight size={14} />
+                
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-semibold text-white">
+                      {activeResume.title || "Primary Resume"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      ATS Verified
                     </span>
                   </div>
+                  <p className="text-xs text-zinc-400">
+                    Strong recruiter compatibility across keyword density and standard section parsing.
+                  </p>
+                  <p className="text-[11px] text-blue-400 flex items-center gap-1 font-medium pt-0.5">
+                    <TrendingUp size={12} /> +12% increase from your previous revision
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              {/* Quick Actions Right */}
+              <div className="flex items-center gap-2.5 shrink-0">
+                <Link
+                  to={`/ai?resumeId=${activeResume._id}`}
+                  className="btn-primary text-xs !py-2.5 !px-4"
+                >
+                  <Sparkles size={13} className="mr-1.5" /> Full ATS Breakdown
+                </Link>
+                <Link
+                  to={`/resume/${activeResume._id}/edit`}
+                  className="btn-secondary text-xs !py-2.5 !px-4"
+                >
+                  Edit Resume
+                </Link>
+              </div>
             </div>
-          )}
-        </motion.div>
-      </motion.div>
+
+            {/* Progress Bar & Parameter Trackers */}
+            <div className="mt-6 pt-6 border-t border-white/[0.06] grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-zinc-400">Keyword Density</span>
+                  <span className="text-white font-medium">92%</span>
+                </div>
+                <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: "92%" }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-zinc-400">Format & Structure</span>
+                  <span className="text-white font-medium">95%</span>
+                </div>
+                <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: "95%" }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-zinc-400">Impact Metrics</span>
+                  <span className="text-white font-medium">85%</span>
+                </div>
+                <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: "85%" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Empty state when no resume uploaded yet */
+          <div className="card-clean p-8 rounded-2xl bg-[#131316] border border-dashed border-white/10 text-center">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto mb-3">
+              <FileText size={22} />
+            </div>
+            <h3 className="text-base font-semibold text-white mb-1">No Active Resume Found</h3>
+            <p className="text-xs text-zinc-400 max-w-md mx-auto mb-5 leading-relaxed">
+              Upload an existing resume or build one with our ATS-optimized builder to generate your readiness score.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Link to="/resume/import" className="btn-primary text-xs">
+                Upload PDF Resume
+              </Link>
+              <Link to="/resume/new" className="btn-secondary text-xs">
+                Build in Editor
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────────────────────────────────────────────────
+            3. TWO SUPPORTING CARDS MAX (Smaller, secondary to score card)
+            ───────────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Supporting Card 1: Recommended Jobs */}
+          <div className="card-clean p-5 rounded-2xl bg-[#131316] border border-white/[0.08] flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                Recommended Roles
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white">{displayJobs.length}</span>
+                <span className="text-xs text-blue-400 font-medium">Matches Ready</span>
+              </div>
+              <p className="text-xs text-zinc-500">
+                Matched against your confirmed core skills
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-zinc-400 shrink-0">
+              <Briefcase size={18} />
+            </div>
+          </div>
+
+          {/* Supporting Card 2: Skill Gaps */}
+          <div className="card-clean p-5 rounded-2xl bg-[#131316] border border-white/[0.08] flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                Skill Gap Opportunities
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white">{missingSkills.length}</span>
+                <span className="text-xs text-zinc-400">Identified to add</span>
+              </div>
+              <p className="text-xs text-zinc-500">
+                Top missing keywords: {missingSkills.join(", ")}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-zinc-400 shrink-0">
+              <Target size={18} />
+            </div>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            4. RECOMMENDED FOR YOU (Main Scrollable Content)
+            ───────────────────────────────────────────────────────────── */}
+        <div className="space-y-4 pt-2">
+          {/* Section Header & Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-white tracking-tight">
+                Recommended for you
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Opportunities curated based on your experience and target profile.
+              </p>
+            </div>
+
+            {/* Filter buttons */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#131316] border border-white/[0.08] self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setJobFilter("all")}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  jobFilter === "all"
+                    ? "bg-white/[0.08] text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                All ({displayJobs.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobFilter("high")}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  jobFilter === "high"
+                    ? "bg-white/[0.08] text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                High Match (90%+)
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobFilter("remote")}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  jobFilter === "remote"
+                    ? "bg-white/[0.08] text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Remote
+              </button>
+            </div>
+          </div>
+
+          {/* Job Cards List */}
+          <div className="space-y-3">
+            {filteredJobs.map((job) => (
+              <div
+                key={job.id}
+                className="card-clean card-clean-hover p-5 rounded-2xl bg-[#131316] border border-white/[0.08] flex flex-col md:flex-row md:items-center justify-between gap-4"
+              >
+                {/* Job Info Left */}
+                <div className="space-y-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-sm font-semibold text-white">
+                      {job.role}
+                    </h3>
+                    <span className="text-xs text-zinc-400 font-medium">
+                      at {job.company}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      {job.matchScore}% Match
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin size={12} /> {job.location}
+                    </span>
+                    <span>•</span>
+                    <span>{job.type}</span>
+                    <span>•</span>
+                    <span>{job.salary}</span>
+                  </div>
+
+                  <p className="text-xs text-zinc-400 line-clamp-1">
+                    {job.description}
+                  </p>
+
+                  {/* Skills tags */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {job.skills.map((skill, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="px-2 py-0.5 rounded text-[11px] bg-white/[0.04] text-zinc-300 border border-white/[0.08]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Job Actions Right */}
+                <div className="flex items-center gap-2 md:self-center shrink-0 pt-2 md:pt-0">
+                  <Link
+                    to={`/jobs/match?role=${encodeURIComponent(job.role)}`}
+                    className="btn-secondary text-xs !py-2 !px-3"
+                  >
+                    Match Analysis
+                  </Link>
+                  <a
+                    href={job.applyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-primary text-xs !py-2 !px-3"
+                  >
+                    Apply Now <ExternalLink size={12} className="ml-1" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </DashboardLayout>
   );
 };

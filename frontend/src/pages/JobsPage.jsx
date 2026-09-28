@@ -2,75 +2,82 @@
 // src/pages/JobsPage.jsx
 // ==========================================
 // AI-powered job and internship recommendations
+// Clean, minimal interface consistent with design system
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Briefcase, MapPin, DollarSign, Star, ExternalLink,
-  Filter, RefreshCw, Sparkles, BookmarkPlus, BookmarkCheck
+  Briefcase,
+  MapPin,
+  DollarSign,
+  ExternalLink,
+  RefreshCw,
+  Sparkles,
+  BookmarkPlus,
+  BookmarkCheck,
+  Search
 } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
-import GlassCard from "../components/GlassCard";
 import SkillBadge from "../components/SkillBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
 const JobCard = ({ job, onSave, saved }) => {
-  const typeColors = {
-    internship: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-    job: "bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] border-[var(--color-brand-500)]/20",
-  };
-
-  const matchColor = job.matchScore >= 85 ? "text-green-500" : job.matchScore >= 70 ? "text-yellow-500" : "text-orange-500";
-
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      whileHover={{ y: -4 }}
-      className="glass rounded-[1.5rem] p-6 border border-subtle hover:border-focus transition-all duration-300 shadow-sm hover:shadow-md"
+      exit={{ opacity: 0, y: -10 }}
+      className="card-clean card-clean-hover rounded-2xl p-5 border border-white/[0.08] bg-[#131316] flex flex-col justify-between"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`text-xs px-2.5 py-0.5 rounded-full border ${typeColors[job.type] || typeColors.job} capitalize font-medium`}>
-              {job.type}
-            </span>
-            {job.matchScore && (
-              <span className={`text-xs font-bold ${matchColor}`}>
-                {job.matchScore}% match
+      <div>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-white/[0.04] text-zinc-300 border border-white/[0.08] capitalize">
+                {job.type || "Full-time"}
               </span>
-            )}
+              {job.matchScore && (
+                <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  {job.matchScore}% Match
+                </span>
+              )}
+            </div>
+            <h3 className="text-sm font-semibold text-white tracking-tight">{job.role}</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">{job.company}</p>
           </div>
-          <h3 className="text-main font-semibold">{job.role}</h3>
-          <p className="text-muted text-sm">{job.company}</p>
+          <button
+            type="button"
+            onClick={() => onSave(job)}
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+              saved
+                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                : "text-zinc-500 hover:text-white hover:bg-white/[0.06]"
+            }`}
+            title={saved ? "Saved" : "Save job"}
+          >
+            {saved ? <BookmarkCheck size={14} /> : <BookmarkPlus size={14} />}
+          </button>
         </div>
-        <button
-          onClick={() => onSave(job)}
-          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${saved ? "bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)]" : "text-muted hover:text-[var(--color-brand-500)] hover:bg-[var(--color-brand-500)]/10"}`}
-        >
-          {saved ? <BookmarkCheck size={16} /> : <BookmarkPlus size={16} />}
-        </button>
-      </div>
 
-      {/* Details */}
-      <div className="flex items-center gap-4 mb-3 text-xs text-muted">
-        <span className="flex items-center gap-1"><MapPin size={11} />{job.location}</span>
-        {job.salary && <span className="flex items-center gap-1"><DollarSign size={11} />{job.salary}</span>}
-      </div>
+        {/* Details */}
+        <div className="flex items-center gap-3 mb-3 text-xs text-zinc-500">
+          <span className="flex items-center gap-1"><MapPin size={12} /> {job.location || "Remote"}</span>
+          {job.salary && <span className="flex items-center gap-1"><DollarSign size={12} /> {job.salary}</span>}
+        </div>
 
-      {/* Description */}
-      <p className="text-muted text-xs mb-3 leading-relaxed line-clamp-2">{job.description}</p>
+        {/* Description */}
+        <p className="text-xs text-zinc-400 mb-4 leading-relaxed line-clamp-2">{job.description}</p>
 
-      {/* Skills */}
-      <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
-        {job.requiredSkills?.slice(0, 4).map((s, i) => (
-          <SkillBadge key={i} skill={s} color="indigo" />
-        ))}
+        {/* Skills */}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {job.requiredSkills?.slice(0, 4).map((s, i) => (
+            <SkillBadge key={i} skill={s} />
+          ))}
+        </div>
       </div>
 
       {/* Apply button */}
@@ -78,9 +85,9 @@ const JobCard = ({ job, onSave, saved }) => {
         href={job.applyUrl || "#"}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl btn-primary font-medium mt-2"
+        className="btn-secondary text-xs !py-2 w-full flex items-center justify-center gap-1.5"
       >
-        Apply Now <ExternalLink size={14} />
+        Apply Now <ExternalLink size={12} />
       </a>
     </motion.div>
   );
@@ -92,20 +99,26 @@ const JobsPage = () => {
   const [targetRole, setTargetRole] = useState("");
   const [filter, setFilter] = useState("all");
   const [jobs, setJobs] = useState([]);
-  const [careerPaths, setCareerPaths] = useState([]);
   const [savedJobIds, setSavedJobIds] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
     const init = async () => {
-      const [resumesRes, savedRes] = await Promise.all([
-        api.get("/resumes"),
-        api.get("/jobs/saved"),
-      ]);
-      setResumes(resumesRes.data.resumes);
-      setSavedJobIds(new Set(savedRes.data.jobs.map(j => `${j.company}-${j.role}`)));
-      setInitialLoad(false);
+      try {
+        const [resumesRes, savedRes] = await Promise.all([
+          api.get("/resumes"),
+          api.get("/jobs/saved"),
+        ]);
+        const rList = resumesRes.data.resumes || [];
+        setResumes(rList);
+        if (rList.length > 0) setSelectedResumeId(rList[0]._id);
+        setSavedJobIds(new Set(savedRes.data.jobs?.map((j) => `${j.company}-${j.role}`) || []));
+      } catch (err) {
+        console.error("Init error", err);
+      } finally {
+        setInitialLoad(false);
+      }
     };
     init();
   }, []);
@@ -113,16 +126,15 @@ const JobsPage = () => {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const resume = resumes.find(r => r._id === selectedResumeId);
-      const skills = resume?.skills?.map(s => s.name) || [];
+      const resume = resumes.find((r) => r._id === selectedResumeId);
+      const skills = resume?.skills?.map((s) => (typeof s === "string" ? s : s.name)) || [];
       const experienceLevel = resume?.experience?.length > 0 ? "junior" : "fresher";
 
       const res = await api.post("/ai/suggest-jobs", { skills, experienceLevel, targetRole });
       setJobs(res.data.jobs || []);
-      setCareerPaths(res.data.careerPaths || []);
       toast.success(`Found ${res.data.jobs?.length || 0} job matches! 🎯`);
     } catch {
-      toast.error("Failed to fetch jobs. Check your Gemini API key.");
+      toast.error("Failed to fetch jobs. Please verify API configuration.");
     } finally {
       setLoading(false);
     }
@@ -132,80 +144,106 @@ const JobsPage = () => {
     const key = `${job.company}-${job.role}`;
     try {
       if (savedJobIds.has(key)) {
-        toast("Already saved!", { icon: "📌" });
+        toast("Already saved", { icon: "📌" });
         return;
       }
       await api.post("/jobs/saved", job);
-      setSavedJobIds(prev => new Set([...prev, key]));
+      setSavedJobIds((prev) => new Set([...prev, key]));
       toast.success("Job saved! 📌");
     } catch {
       toast.error("Failed to save job");
     }
   };
 
-  const filteredJobs = filter === "all" ? jobs : jobs.filter(j => j.type === filter);
+  const filteredJobs = filter === "all" ? jobs : jobs.filter((j) => j.type?.toLowerCase() === filter);
 
-  if (initialLoad) return <DashboardLayout title="Jobs & Internships"><div className="flex justify-center mt-20"><LoadingSpinner /></div></DashboardLayout>;
+  if (initialLoad) {
+    return (
+      <DashboardLayout title="Jobs & Internships">
+        <div className="flex justify-center items-center py-24">
+          <LoadingSpinner />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout title="Jobs & Internships">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <DashboardLayout title="Jobs & Recommendations">
+      <div className="space-y-6 max-w-6xl mx-auto">
+        {/* Page Title */}
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-white">
+            Job & Internship Recommendations
+          </h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Discover roles tailored to your confirmed skillset and target positions.
+          </p>
+        </div>
+
         {/* Search controls */}
-        <GlassCard className="border-subtle shadow-sm">
-          <h2 className="text-main font-semibold mb-4 flex items-center gap-2">
-            <Sparkles size={18} className="text-[var(--color-brand-500)]" />
-            AI Job Recommendation Engine
-          </h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm text-muted mb-2 block font-medium">Your Resume</label>
+        <div className="card-clean p-5 rounded-2xl bg-[#131316] border border-white/[0.08]">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div className="md:col-span-4">
+              <label className="text-xs text-zinc-400 font-medium mb-1.5 block">Active Resume</label>
               <select
                 value={selectedResumeId}
                 onChange={(e) => setSelectedResumeId(e.target.value)}
-                className="w-full input-dark rounded-xl py-2.5 px-4 text-sm"
+                className="w-full input-clean text-xs bg-[#0E0E11]"
               >
-                <option value="">-- Optional: select resume --</option>
-                {resumes.map(r => (
+                <option value="">-- Choose a resume --</option>
+                {resumes.map((r) => (
                   <option key={r._id} value={r._id}>{r.title}</option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="text-sm text-muted mb-2 block font-medium">Target Role</label>
+
+            <div className="md:col-span-5">
+              <label className="text-xs text-zinc-400 font-medium mb-1.5 block">Target Role</label>
               <input
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g., React Developer"
-                className="w-full input-dark rounded-xl py-2.5 px-4 text-sm"
+                placeholder="e.g. Frontend Engineer, Full Stack Developer"
+                className="w-full input-clean text-xs bg-[#0E0E11]"
               />
             </div>
-            <div className="flex items-end">
+
+            <div className="md:col-span-3">
               <button
+                type="button"
                 onClick={fetchJobs}
                 disabled={loading}
                 id="find-jobs-btn"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl btn-primary font-medium disabled:opacity-50"
+                className="w-full btn-primary text-xs !py-2.5 disabled:opacity-50"
               >
-                {loading ? <><RefreshCw size={16} className="animate-spin" /> Finding...</> : <><Briefcase size={16} /> Find Jobs</>}
+                {loading ? (
+                  <>
+                    <RefreshCw size={13} className="animate-spin mr-1.5" /> Finding...
+                  </>
+                ) : (
+                  <>
+                    <Search size={13} className="mr-1.5" /> Find Matching Jobs
+                  </>
+                )}
               </button>
             </div>
           </div>
-        </GlassCard>
+        </div>
 
         {/* Filter tabs */}
         {jobs.length > 0 && (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#131316] border border-white/[0.08] w-fit">
             {["all", "job", "internship"].map((f) => (
               <button
                 key={f}
+                type="button"
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize shadow-sm ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
                   filter === f
-                    ? "bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] border border-[var(--color-brand-500)]/30"
-                    : "btn-secondary border-transparent"
+                    ? "bg-blue-600 text-white"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                {f} ({f === "all" ? jobs.length : jobs.filter(j => j.type === f).length})
+                {f} ({f === "all" ? jobs.length : jobs.filter((j) => j.type?.toLowerCase() === f).length})
               </button>
             ))}
           </div>
@@ -213,14 +251,12 @@ const JobsPage = () => {
 
         {/* Jobs grid */}
         {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="text-center">
-              <LoadingSpinner />
-              <p className="text-muted text-sm mt-4">AI is finding the best matches for you...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <LoadingSpinner size={32} />
+            <p className="text-xs text-zinc-400 mt-4 animate-pulse">Evaluating matches against job descriptions...</p>
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence>
               {filteredJobs.map((job, i) => (
                 <JobCard
@@ -233,35 +269,15 @@ const JobsPage = () => {
             </AnimatePresence>
           </div>
         ) : jobs.length === 0 ? (
-          <div className="glass rounded-[1.5rem] p-16 border border-subtle text-center shadow-sm">
-            <div className="text-5xl mb-4">🎯</div>
-            <h3 className="text-main font-semibold mb-2">Find Your Dream Role</h3>
-            <p className="text-muted text-sm">Select your resume and let AI recommend the best jobs for your skills.</p>
+          <div className="card-clean rounded-2xl p-12 border border-dashed border-white/10 text-center space-y-3">
+            <Briefcase size={24} className="text-blue-500 mx-auto" />
+            <h3 className="text-sm font-semibold text-white">Find Target Opportunities</h3>
+            <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+              Select your resume and click "Find Matching Jobs" to generate compatibility scores.
+            </p>
           </div>
         ) : null}
 
-        {/* Career Paths */}
-        {careerPaths.length > 0 && (
-          <div>
-            <h3 className="text-main font-semibold mb-4">🗺️ Recommended Career Paths</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              {careerPaths.map((path, i) => (
-                <GlassCard key={i} className="border-subtle hover:border-focus transition-all duration-300 shadow-sm hover:shadow-md">
-                  <h4 className="text-main font-semibold mb-1">{path.path}</h4>
-                  <p className="text-muted text-sm mb-4">{path.description}</p>
-                  <div className="flex items-center justify-between text-xs mt-auto">
-                    <span className="text-green-500 font-medium">💰 {path.avgSalary}</span>
-                    <div className="flex flex-wrap gap-1">
-                      {path.skills?.slice(0, 3).map((s, si) => (
-                        <SkillBadge key={si} skill={s} color="purple" />
-                      ))}
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );

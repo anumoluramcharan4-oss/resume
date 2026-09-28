@@ -25,6 +25,7 @@ import JobMatchPage from "./pages/JobMatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import CareerAdvisor from "./pages/CareerAdvisor";
 import ResumeImport from "./pages/ResumeImport";
+import InterviewPrep from "./pages/InterviewPrep";
 
 function App() {
   return (
@@ -57,6 +58,12 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/resume/shared/:shareId" element={<PublicResume />} />
             <Route path="/gallery" element={<Navigate to="/resume-hub" replace />} />
+            <Route path="/resume-builder" element={<Navigate to="/resume/new" replace />} />
+            <Route path="/resume-analyzer" element={<Navigate to="/ai" replace />} />
+            <Route path="/career-advisor" element={<Navigate to="/advisor" replace />} />
+            <Route path="/job-matcher" element={<Navigate to="/jobs/match" replace />} />
+            <Route path="/interview-prep" element={<InterviewPrep />} />
+            <Route path="/settings" element={<ProfilePage />} />
 
             {/* ---- Protected Routes (all publicly accessible now via simplified ProtectedRoute) ---- */}
             <Route element={<ProtectedRoute />}>

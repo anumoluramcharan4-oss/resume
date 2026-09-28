@@ -7,6 +7,7 @@ const ResumeVersion = require("../models/ResumeVersion");
 const ResumeShare = require("../models/ResumeShare");
 const ResumeAnalytic = require("../models/ResumeAnalytic");
 const aiClient = require("../config/aiClient");
+const { parseResumePdf } = require("../services/resumeParser");
 const crypto = require("crypto");
 
 // PDF text extraction using pdfjs-dist (dynamically imported for ESM compatibility)
@@ -1083,140 +1084,25 @@ const importPdfResume = async (req, res) => {
       return res.status(400).json({ message: "PDF base64 data is required" });
     }
 
-    if (!genAI) {
-      return res.status(500).json({ message: "AI client not initialized. Configure OpenRouter API Key." });
+    const structuredData = await parseResumePdf(pdfData);
+
+    // Override or set title if custom title was specified in request
+    if (structuredData.parsedData && title) {
+      structuredData.parsedData.title = title;
     }
 
-    // Strip prefix from base64 string if present
-    let cleanBase64 = pdfData;
-    if (cleanBase64.startsWith("data:")) {
-      cleanBase64 = cleanBase64.split(",")[1];
-    }
-
-    // Extract text locally from PDF buffer using pdfjs-dist
-    const pdfBuffer = Buffer.from(cleanBase64, "base64");
-    const extractedText = await extractPdfText(pdfBuffer);
-
-    const model = genAI.getGenerativeModel();
-
-    const prompt = `You are a professional ATS resume parsing system and expert career advisor.
-Read the extracted resume text below and perform two actions:
-1. Extract all candidate information structurally.
-2. Evaluate and analyze the resume to provide optimization suggestions.
-
-Return ONLY a valid JSON object matching the exact schema below. Do not enclose it in markdown blocks (such as \`\`\`json) or include any extra text.
-
-Required JSON Schema:
-{
-  "parsedData": {
-    "title": "A short, standard professional role title (e.g. 'Frontend Developer', 'Senior Product Manager')",
-    "template": "modern",
-    "personal": {
-      "fullName": "Name of the candidate",
-      "email": "Email address",
-      "phone": "Phone number",
-      "location": "City, State, or Country",
-      "linkedin": "LinkedIn profile link or username",
-      "github": "GitHub username or link",
-      "portfolio": "Portfolio link",
-      "twitter": "Twitter link or username"
-    },
-    "about": "A concise professional summary or bio of the candidate (3-4 sentences)",
-    "skills": [
-      { "name": "Skill Name", "level": "one of: beginner, intermediate, advanced, expert" }
-    ],
-    "education": [
-      {
-        "institution": "School/University Name",
-        "degree": "Degree (e.g. B.S., Master of Science)",
-        "field": "Field of study (e.g. Computer Science)",
-        "startDate": "Start date",
-        "endDate": "End date or 'Present'",
-        "grade": "GPA or Grade if mentioned",
-        "description": "Any additional achievements or study details"
-      }
-    ],
-    "experience": [
-      {
-        "company": "Company Name",
-        "role": "Job Title",
-        "location": "Location",
-        "startDate": "Start Date",
-        "endDate": "End Date or 'Present'",
-        "current": true or false,
-        "description": "Responsibilities and accomplishments. Format as multiple bullet points or lines."
-      }
-    ],
-    "projects": [
-      {
-        "name": "Project Name",
-        "description": "Short description of the project",
-        "technologies": ["tech 1", "tech 2"],
-        "liveUrl": "Demo link",
-        "githubUrl": "Code link",
-        "startDate": "Start date",
-        "endDate": "End date"
-      }
-    ],
-    "certifications": [
-      {
-        "name": "Certification Name",
-        "issuer": "Issuing organization",
-        "date": "Date issued",
-        "url": "Certificate verification link"
-      }
-    ],
-    "achievements": [
-      {
-        "title": "Achievement name",
-        "description": "Description of achievement (e.g., hackathons, awards, competitions)",
-        "date": "Date received"
-      }
-    ],
-    "languages": [
-      {
-        "name": "Language Name",
-        "proficiency": "one of: basic, conversational, fluent, native"
-      }
-    ]
-  },
-  "suggestions": {
-    "missingSkills": ["skill 1", "skill 2", "skill 3"],
-    "improvements": ["improvement tip 1", "improvement tip 2"],
-    "atsScore": 85,
-    "careerReadinessScore": 80,
-    "recommendedInternships": ["Internship Title at Company 1", "Internship Title at Company 2"],
-    "recommendedCareerPaths": ["Career Path 1", "Career Path 2"]
-  }
-}
-
-Extracted Resume Text:
-${extractedText}`;
-
-    const result = await model.generateContent(prompt);
-    let textResult = result.response.text().trim();
-
-    // Clean JSON formatting
-    textResult = textResult.replace(/```json\n?|\n?```/g, "").trim();
-    let parsedJson;
-    try {
-      parsedJson = JSON.parse(textResult);
-    } catch (parseError) {
-      console.error("JSON parsing failed, trying to extract JSON substring:", parseError);
-      const startIdx = textResult.indexOf("{");
-      const endIdx = textResult.lastIndexOf("}");
-      if (startIdx !== -1 && endIdx !== -1) {
-        parsedJson = JSON.parse(textResult.substring(startIdx, endIdx + 1));
-      } else {
-        throw new Error("Unable to parse Gemini output as JSON");
-      }
-    }
-
-    parsedJson.rawText = extractedText;
-    res.json(parsedJson);
+    res.json(structuredData);
   } catch (error) {
-    console.error("PDF Parse error:", error);
-    res.status(500).json({ message: "Failed to parse PDF resume: " + error.message });
+    console.error("PDF Parse error:", error.message);
+    
+    // Return meaningful and user-friendly error response on failures
+    const isModelError = error.message.includes("OpenRouter") || error.message.includes("Unable to analyze");
+    res.status(500).json({
+      message: "Unable to analyze resume.",
+      reason: isModelError 
+        ? "OpenRouter service unavailable. Please try again later."
+        : error.message
+    });
   }
 };
 

@@ -413,9 +413,20 @@ const chatWithCoach = async (req, res) => {
     if (!message) {
       return res.status(400).json({ message: "Message is required" });
     }
-    const advisor = await CareerAdvisor.findOne({ user: req.user._id });
+    let advisor = await CareerAdvisor.findOne({ user: req.user._id });
     if (!advisor) {
-      return res.status(404).json({ message: "Advisor profile not found. Please set up goals first." });
+      const latestResume = await Resume.findOne({ user: req.user._id }).sort({ updatedAt: -1 });
+      advisor = new CareerAdvisor({
+        user: req.user._id,
+        targetRole: latestResume?.title || req.user.targetRole || "Software Engineer",
+        preferences: { interests: [], workType: "Remote" },
+        skillAnalysis: { currentSkills: latestResume ? latestResume.skills.map((s) => s.name) : [], missingSkills: [] },
+        learningRoadmap: [],
+        projects: [],
+        certifications: [],
+        chatHistory: [],
+        tracker: { atsScore: latestResume?.atsScore || 0 }
+      });
     }
 
     const latestResume = await Resume.findOne({ user: req.user._id }).sort({ updatedAt: -1 });
