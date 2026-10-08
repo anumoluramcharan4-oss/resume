@@ -4,11 +4,13 @@
 // Defines all routes and wraps the app with providers.
 // React Router handles navigation between pages.
 
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { testSupabaseConnection } from "./services/testSupabase";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -28,6 +30,9 @@ import ResumeImport from "./pages/ResumeImport";
 import InterviewPrep from "./pages/InterviewPrep";
 
 function App() {
+  useEffect(() => {
+    testSupabaseConnection();
+  }, []);
   return (
     // ThemeProvider gives all components access to light/dark mode
     <ThemeProvider>
